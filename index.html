@@ -1,0 +1,1039 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LTTA-RTI Calculator</title>
+<style>
+:root{--blue:#004A96;--blue2:#21A0D2;--ctrl:#1f77b4;--cand:#2ca02c;--bg:#f3f6fa;--card:#fff;--line:#dde3eb;--txt:#1d2733;--mut:#6b7785;--ok:#1e8e3e;--warn:#c77700;--err:#c62828;--est:#d32f2f;--pur:#7b1fa2;--r:8px}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI","Microsoft YaHei",Arial,sans-serif;background:var(--bg);color:var(--txt);font-size:14px}
+header{background:var(--blue);color:#fff;display:flex;align-items:center;gap:16px;padding:0 24px;height:56px;position:sticky;top:0;z-index:20;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+header h1{font-size:16px;margin:0;font-weight:600}
+header .sub{font-size:12px;opacity:.8}
+header .sp{flex:1}
+.hbtn{background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.3);border-radius:var(--r);padding:6px 12px;cursor:pointer;font-size:13px}
+.hbtn:hover{background:rgba(255,255,255,.25)}
+.hbtn.pri{background:var(--blue2);border-color:var(--blue2);font-weight:600}
+.hbtn:focus-visible,.btn:focus-visible,.chip:focus-visible{outline:2px solid #fff;outline-offset:2px}
+.dd{position:relative}
+.menu{display:none;position:absolute;right:0;top:115%;background:#fff;border-radius:8px;box-shadow:0 8px 24px rgba(0,0,0,.18);min-width:190px;padding:4px;z-index:30}
+.dd.open .menu{display:block}
+.menu button{display:flex;justify-content:space-between;gap:12px;width:100%;border:0;background:none;padding:8px 12px;font-size:13px;color:var(--txt);cursor:pointer;border-radius:6px;text-align:left}
+.menu button:hover{background:#eef2f7}
+kbd{font-size:11px;color:#8a96a3;font-family:inherit}
+.qbar{display:none;position:sticky;top:56px;z-index:15;align-items:stretch;gap:12px;flex-wrap:wrap;background:#fff;border-bottom:1px solid var(--line);padding:8px 24px;font-size:13px;box-shadow:0 2px 6px rgba(16,24,40,.05)}
+.qbar.show{display:flex}
+.qs{display:flex;flex-direction:column;justify-content:center;align-items:flex-start;gap:2px;min-width:0}
+.qs>.ql{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;white-space:nowrap}
+.qfile{display:flex;align-items:center;gap:6px;max-width:260px;font-weight:600;color:var(--blue)}
+.qfile small{color:var(--mut);font-weight:400;white-space:nowrap}
+.qfbtn{display:flex;align-items:center;gap:6px;border:1px solid transparent;background:none;padding:2px 6px;margin-left:-6px;border-radius:6px;cursor:pointer;font:inherit;font-weight:600;color:var(--blue);max-width:240px;min-width:0}
+.qfbtn span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.qfbtn:hover{background:#eef4fb;border-color:#cfe0f2}
+.qfbtn:hover span{text-decoration:underline}
+.qx{border:0;background:none;color:#9aa5b1;cursor:pointer;font-size:12px;width:20px;height:20px;border-radius:50%;flex:none}
+.qx:hover{background:#fdecea;color:var(--err)}
+.qdiv{width:1px;background:var(--line);margin:2px 0}
+.qsel{appearance:none;-webkit-appearance:none;border:1px solid var(--line);border-radius:8px;padding:5px 28px 5px 10px;font-size:13px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%236b7785'/%3E%3C/svg%3E") no-repeat right 10px center;cursor:pointer;width:auto;max-width:100%}
+.qsel:hover{border-color:var(--blue)}
+.qprop{font-weight:600;min-width:130px}
+.qmat{display:flex;gap:2px;flex:1 1 260px;min-width:220px;max-width:480px}
+.qmat .qsel{width:100%;min-width:0;text-overflow:ellipsis;font-weight:600}
+.qmat.c .qsel{border-left:4px solid var(--ctrl)}
+.qmat.k .qsel{border-left:4px solid var(--cand)}
+.qrole{font-size:11px;font-weight:700;white-space:nowrap}
+.qmat.c .qrole{color:var(--ctrl)}.qmat.k .qrole{color:var(--cand)}
+.qcnt{font-size:11px;color:var(--mut);white-space:nowrap;text-transform:none;letter-spacing:0}
+.qswap{align-self:flex-end;margin-bottom:1px;border:1px solid var(--line);background:#fff;border-radius:50%;width:30px;height:30px;cursor:pointer;color:var(--mut);font-size:14px;flex:none}
+.qswap:hover{border-color:var(--blue);color:var(--blue)}
+main{display:grid;grid-template-columns:minmax(380px,1fr) minmax(560px,1.5fr);gap:16px;padding:16px 24px;max-width:1700px;margin:auto}
+@media(max-width:1100px){main{grid-template-columns:1fr}.col-res{order:-1}}
+.col{display:flex;flex-direction:column;gap:16px;min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card h2{font-size:15px;margin:0}
+input,select,textarea{width:100%;border:1px solid var(--line);border-radius:6px;padding:6px 8px;font:inherit;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--blue2);border-color:transparent}
+label{font-size:12px;color:var(--mut);display:block;margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.hint{font-size:12px;color:var(--mut)}
+.btn{border:1px solid var(--line);background:#fff;border-radius:var(--r);padding:6px 12px;cursor:pointer;font-size:13px;color:var(--txt)}
+.btn:hover{border-color:var(--blue);color:var(--blue)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.btn.pri{background:var(--blue);color:#fff;border-color:var(--blue)}
+.btn.pri:hover{background:#003a78;color:#fff}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px;align-items:center}
+.gh{display:flex;align-items:center;gap:8px;margin-bottom:12px;min-width:0}
+.dot{width:10px;height:10px;border-radius:50%;flex:none}
+.srcchip{margin-left:auto;font-size:11px;color:var(--mut);background:#f3f6fa;border:1px solid var(--line);border-radius:10px;padding:1px 8px;max-width:58%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srcchip svg{vertical-align:-1px;margin-right:4px}
+.mgrid{display:grid;grid-template-columns:1.3fr .8fr 1fr;gap:8px;margin-bottom:12px}
+.mgrid .fname{grid-column:1/-1}
+.mgrid.lk{grid-template-columns:1fr}
+.mgrid.lk .fname{grid-column:auto}
+.mgrid.lk.c3{grid-template-columns:minmax(0,1fr) 110px 110px}
+.mgrid.lk.c2{grid-template-columns:minmax(0,1fr) 110px}
+.thkbox.k label{color:var(--cand)}
+.thkbox.k select{border-color:#9fd3a3;color:#17661a}
+.mname{font-weight:600}
+.mname::placeholder{font-weight:400;color:#a0a9b4}
+.rtibox label{color:var(--blue);font-weight:700}
+.rtibox input{border-color:#9cc0e6;background:#f2f7fd;font-weight:700;color:var(--blue);text-align:right}
+.thkbox label{color:var(--ctrl);font-weight:700}
+.thkbox select{border-color:#9cc0e6;font-weight:600;color:#0d4f8b}
+table{border-collapse:collapse;width:100%}
+.dt th{font-size:12px;color:var(--mut);font-weight:600;text-align:left;padding:4px 6px;border-bottom:1px solid var(--line)}
+.dt thead th{vertical-align:middle;white-space:nowrap}
+.dt td{padding:3px 4px}
+.dt td.c{text-align:center;width:40px}
+.dt td.tc{position:relative}
+.dt input{padding:5px 8px}
+.dt input[type=number]::-webkit-inner-spin-button,.dt input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}
+.dt input[type=number]{-moz-appearance:textfield}
+.dt input[type=checkbox]{width:auto}
+.dt tr.off input[type=number]{color:#aaa;text-decoration:line-through}
+.dt input.bad{border-color:var(--err);background:#fff3f3}
+.dt input.est{color:var(--est);font-weight:700;background:#fff5f5;border-color:#f3b4b4;text-decoration:none!important}
+.cenb{position:absolute;right:10px;top:50%;transform:translateY(-50%);font-size:10.5px;background:#fff2d6;color:#9a6b00;border-radius:6px;padding:0 5px;white-space:nowrap}
+.estb{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:flex;align-items:center;gap:4px;font-size:11px}
+.estb s{color:#8a96a3}
+.estb .tg{background:var(--est);color:#fff;border-radius:6px;padding:0 5px;font-weight:600}
+.estb button{border:0;background:none;cursor:pointer;color:var(--mut);font-size:13px;padding:0 2px}
+.estb button:hover{color:var(--blue)}
+.estLg{font-size:12px;color:var(--mut);margin-top:6px}
+.estLg b{color:var(--est)}
+.ib{border:none;background:none;cursor:pointer;color:var(--mut);font-size:15px;padding:2px 6px;border-radius:4px}
+.ib:hover{background:#eef2f7;color:var(--err)}
+#card-ctrl.dim{opacity:.45}
+.ptag{display:inline-flex;align-items:center;gap:4px;margin-left:8px;font-size:13px;font-weight:700;line-height:22px;padding:0 10px;border-radius:12px;letter-spacing:.2px;white-space:nowrap;vertical-align:middle;border:1px solid transparent}
+.ptag.c{background:#e3eef9;color:#0d4f8b;border-color:#9cc0e6}
+.ptag.k{background:#e5f4e7;color:#17661a;border-color:#9fd3a3}
+.ptag.w{background:#fff;color:var(--blue);box-shadow:0 1px 3px rgba(0,0,0,.18)}
+.ptag:before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;margin-right:2px;opacity:.8}
+.ptag.w:before{display:none}
+details summary{cursor:pointer;font-weight:600;font-size:14px}
+.set{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-top:10px}
+.set .full{grid-column:1/-1}
+.formula{display:none}
+/* ===== V5.4 global polish ===== */
+:root{--bg:#eef2f7;--shadow:0 1px 2px rgba(16,24,40,.04),0 2px 8px rgba(16,24,40,.05)}
+body{font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+header{background:linear-gradient(90deg,#00387a 0%,#004A96 55%,#0a5cb0 100%)!important}
+.card{border-color:#e3e8ef!important;border-radius:10px!important;box-shadow:var(--shadow)!important}
+main{gap:18px!important;padding:18px 24px 28px!important}
+.col{gap:18px!important}
+.card h2{font-size:15px;font-weight:700;letter-spacing:.2px}
+.gh{padding-bottom:10px;border-bottom:1px solid #eef1f5}
+input,select{transition:border-color .15s,box-shadow .15s}
+input:hover,select:hover{border-color:#c3ccd8}
+.dt tbody tr:hover td{background:#f8fafc}
+.res tbody tr:nth-child(even) td{background:#fafbfd}
+details>summary{list-style:none;display:flex;align-items:center;gap:8px;font-weight:700;font-size:15px;cursor:pointer;user-select:none}
+details>summary::-webkit-details-marker{display:none}
+details>summary:before{content:"";width:8px;height:8px;border-right:2px solid var(--mut);border-bottom:2px solid var(--mut);transform:rotate(-45deg);transition:transform .2s;margin-right:4px}
+details[open]>summary:before{transform:rotate(45deg)}
+details>summary:hover{color:var(--blue)}
+.sumhint{font-size:12px;font-weight:400;color:var(--mut);margin-left:6px}
+details.method{grid-column:1/-1}
+/* ===== method doc ===== */
+.fm{margin-top:14px;font-size:14px;line-height:1.7;color:#243042}
+.fm nav{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.fm nav a{font-size:12.5px;text-decoration:none;color:var(--blue);background:#eef4fb;border:1px solid #d6e4f5;border-radius:14px;padding:3px 11px}
+.fm nav a:hover{background:#dbe9f8}
+.fm .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(460px,1fr));gap:16px}
+.fm section{border:1px solid #e6ebf2;border-radius:10px;padding:14px 16px;background:#fff;scroll-margin-top:120px}
+.fm h3{margin:0 0 10px;font-size:15px;color:#0d3d78;display:flex;align-items:center;gap:8px}
+.fm h3 .no{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:50%;background:#004A96;color:#fff;font-size:12px;font-weight:700;flex:none}
+.fm h3 .ref{margin-left:auto;font-size:11px;font-weight:600;color:#6b7785;background:#f1f4f8;border-radius:4px;padding:1px 6px}
+.fm p{margin:6px 0}
+.fm ol{margin:6px 0;padding-left:20px}.fm ol li{margin:4px 0}
+.fm .eq{font-family:"Cambria Math","Times New Roman",serif;font-size:16px;background:#f5f8fc;border-left:3px solid #21A0D2;border-radius:4px;padding:6px 12px;margin:8px 0;color:#102a4c;overflow-x:auto;white-space:nowrap}
+.fm .eq i{font-style:italic}.fm .eq sub{font-size:11px}
+.fm table{width:100%;border-collapse:collapse;margin:8px 0;font-size:13px}
+.fm th,.fm td{border-bottom:1px solid #edf0f4;padding:6px 8px;text-align:left;vertical-align:top}
+.fm thead th{background:#f3f6fa;color:#4a5668;font-size:12px;font-weight:700;border-bottom:1px solid #dfe5ed}
+#fm-data tbody td:first-child,#fm-t191 tbody td:first-child,#fm-c231 tbody td:first-child{white-space:nowrap}
+.fm #x{}
+.fm td.n{font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:600;color:#0d3d78}
+.fm .tag{display:inline-block;font-size:11px;font-weight:700;border-radius:4px;padding:0 6px;margin-left:0;color:#fff}
+.fm .tg-a{background:#2e7d32}.fm .tg-b{background:#c77700}.fm .tg-c{background:#6b7785}
+.fm .note{font-size:12.5px;color:#5b6676;background:#f8fafc;border-radius:6px;padding:8px 10px;margin-top:8px}
+.fm .warn{font-size:12.5px;color:#7a5200;background:#fff6e0;border:1px solid #f3dca6;border-radius:6px;padding:8px 10px;margin-top:8px}
+.fm .live{border-color:#bcd6f2;background:linear-gradient(180deg,#f6faff,#fff)}
+.fm .kv{display:grid;grid-template-columns:max-content 1fr;gap:4px 14px;font-size:13px}
+.fm .kv dt{color:#6b7785}.fm .kv dd{margin:0;font-variant-numeric:tabular-nums;font-weight:600}
+.fm .hl{background:#fff3c4;border-radius:3px;padding:0 3px}
+.fm .disc{font-size:12px;color:#6b7785;margin-top:14px;text-align:center}
+@media print{.fm section{break-inside:avoid;border:1px solid #ccc}.fm .grid{display:block}.fm section{margin-bottom:4mm}}
+.kpis{display:grid;grid-template-columns:1.25fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.kpi{border:1px solid var(--line);border-radius:var(--r);padding:10px 14px;min-width:0}
+.kpi .l{font-size:12px;color:var(--mut)}
+.kpi .v{font-size:28px;font-weight:700;line-height:1.25;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi.main{background:linear-gradient(135deg,#004A96,#1565c0);color:#fff;border:none}
+.kpi.main .l{display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+.kpi.main .l,.kpi.main .s{color:rgba(255,255,255,.85)}
+.kpi.main .v{font-size:34px}
+.kpi.t .v{color:var(--pur)}
+.qm{display:inline-block;width:14px;height:14px;border-radius:50%;border:1px solid currentColor;font-size:10px;line-height:12px;text-align:center;font-style:italic;cursor:help;margin-left:4px}
+.res th,.res td{padding:6px 8px;border-bottom:1px solid #eef1f5;text-align:right;font-variant-numeric:tabular-nums;font-size:13px}
+.res th:first-child,.res td:first-child{text-align:left;color:var(--mut);font-weight:500}
+.res thead th{font-size:12px;color:var(--mut);background:#f7f9fc}
+.res .pm{font-size:11px;color:var(--mut);margin-left:4px}
+.msgs{list-style:none;padding:0;margin:8px 0 0}
+.msgs:empty{display:none}
+#msgMore{margin-top:0}
+.msgs li{padding:6px 10px 6px 28px;border-radius:6px;margin-bottom:6px;font-size:13px;position:relative}
+.msgs li:before{position:absolute;left:10px;top:6px;font-weight:700}
+.msgs .e{background:#fdecea}.msgs .e:before{content:"✕";color:var(--err)}
+.msgs .w{background:#fff6e5}.msgs .w:before{content:"!";color:var(--warn)}
+.msgs .i{background:#e8f1fb}.msgs .i:before{content:"i";color:var(--blue2);font-style:italic}
+.msgs .o{background:#e9f6ec}.msgs .o:before{content:"✓";color:var(--ok)}
+.mbar{display:flex;gap:8px;align-items:center;font-size:12px}
+.badge{border-radius:10px;padding:0 8px;line-height:20px;font-weight:600}
+.badge.e{background:#fdecea;color:var(--err)}.badge.w{background:#fff6e5;color:var(--warn)}.badge.i{background:#e8f1fb;color:#1b6fa3}
+.lnk{border:0;background:none;color:var(--blue);cursor:pointer;font-size:12px;padding:0}
+.lnk:hover{text-decoration:underline}
+.chartbox{border-top:1px solid var(--line);padding-top:12px;margin-top:4px}
+.chead{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin-bottom:4px}
+.tabs{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.chk{display:flex;align-items:center;gap:4px;font-size:13px;white-space:nowrap;color:var(--txt);margin:0}
+.chk input{width:auto}
+#chart{width:100%;height:auto;display:block;max-width:820px;max-height:min(440px,calc(100vh - 330px));margin:0 auto}
+#chart [data-g]{cursor:pointer}
+#chart [data-g]:hover{stroke:#000;stroke-width:2}
+.chartbox .hint{text-align:center;margin-top:2px}
+.msgwrap{border-top:1px solid var(--line);margin-top:12px;padding-top:4px}
+.msgwrap:has(#msgs:empty){display:none}
+.ov{position:fixed;inset:0;background:rgba(15,30,50,.45);display:none;align-items:flex-start;justify-content:center;z-index:50;overflow:auto;padding:30px 12px}
+.ov.show{display:flex}
+.modal{background:#fff;border-radius:12px;width:min(1240px,100%);box-shadow:0 10px 40px rgba(0,0,0,.25)}
+.mh{display:flex;align-items:center;padding:14px 18px;border-bottom:1px solid var(--line)}
+.mh h3{margin:0;font-size:16px;flex:1}
+.mb{padding:14px 18px}
+.mf{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.drop{border:2px dashed #b9c6d6;border-radius:10px;padding:18px;text-align:center;color:var(--mut);cursor:pointer;background:#f9fbfd}
+.drop.hv{border-color:var(--blue2);background:#eef7fc;color:var(--blue)}
+.drop.cmp{padding:8px 14px;text-align:left;display:flex;align-items:center;gap:12px}
+.drop.cmp [data-i="dropH"]{display:none}
+.drop.cmp:after{content:"当前： " attr(data-cur);margin-left:auto;font-size:12px;color:var(--mut)}
+.pick{display:grid;grid-template-columns:1.1fr 1.5fr 1.5fr .8fr;gap:12px;margin:14px 0 8px}
+.pick label{font-weight:600}
+.pick .c1 label{color:var(--ctrl)}.pick .c2 label{color:var(--cand)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
+.chip{border:1px solid var(--line);border-radius:16px;padding:4px 11px;font-size:12.5px;cursor:pointer;background:#fff}
+.chip.on{background:var(--blue);border-color:var(--blue);color:#fff}
+.chip small{opacity:.7;margin-left:4px}
+.mxwrap{overflow:auto;max-height:50vh;border:1px solid var(--line);border-radius:var(--r)}
+.mx{border-collapse:collapse;font-size:12.5px;table-layout:fixed}
+.mx th,.mx td{border:1px solid #e5e9f0;padding:5px 7px;text-align:right;font-variant-numeric:tabular-nums}
+.mx th{background:#f5f7fa;font-weight:600;font-size:12px;text-align:center}
+.mx thead th{position:sticky;top:0;z-index:2}
+.mx th:first-child{width:70px}
+.mx th.mc{cursor:pointer;min-width:110px;white-space:normal;line-height:1.3;vertical-align:bottom}
+.mx th.mc:hover{background:#e8f1fb}
+.mx .nm{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-word}
+.mx .isC{background:#e3eef9!important;box-shadow:inset 0 3px 0 var(--ctrl)}
+.mx .isK{background:#e5f4e7!important;box-shadow:inset 0 3px 0 var(--cand)}
+.mx td.cen{color:#9a6b00;font-style:italic}
+.mx td.na{color:#ccc;text-align:center}
+.mx tr.sum td,.mx tr.sum th{background:#fff8e1;font-size:13px;border-top:2px solid #f0c36d}
+.mx tr.sum2 td,.mx tr.sum2 th{background:#fffcf0}
+.tag{display:inline-block;font-size:10.5px;padding:1px 6px;border-radius:8px;margin-left:4px;font-weight:600;color:#fff}
+.tag.c{background:var(--ctrl)}.tag.k{background:var(--cand)}
+.legend{font-size:12px;color:var(--mut);display:flex;gap:16px;flex-wrap:wrap;margin-top:8px}
+#dropAll{position:fixed;inset:0;z-index:80;background:rgba(0,74,150,.18);border:4px dashed var(--blue2);display:none;align-items:center;justify-content:center;pointer-events:none}
+#dropAll.show{display:flex}
+#dropAll div{background:#fff;color:var(--blue);font-size:18px;font-weight:600;padding:16px 28px;border-radius:12px;box-shadow:0 6px 24px rgba(0,0,0,.2)}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#263238;color:#fff;padding:8px 16px;border-radius:6px;opacity:0;transition:.3s;pointer-events:none;font-size:13px;z-index:90}
+.toast.show{opacity:.95}
+#report{display:none}
+/* V5.3 KPI redesign */
+.kpis{grid-template-columns:1.35fr 1fr 1fr!important;align-items:stretch}
+.kpi{display:flex;flex-direction:column;padding:14px 16px!important}
+.kpi .l{display:flex;align-items:center;gap:8px;min-height:24px;font-size:12px}
+.kpi .v{margin-top:6px}
+.kpi .s{margin-top:auto;padding-top:10px;border-top:1px solid #eef1f5}
+.kpi.main .hd{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:24px}
+.kpi.main .hd .l{min-height:0}
+.kpi.main .big{display:flex;align-items:baseline;gap:10px;margin-top:6px}
+.kpi.main .big .v{margin:0;font-size:40px;line-height:1}
+.ulb{font-size:10.5px;font-weight:700;letter-spacing:.4px;color:#cfe3ff;border:1px solid rgba(255,255,255,.35);border-radius:4px;padding:1px 6px;white-space:nowrap}
+.kpi.main .foot{margin-top:auto;padding-top:10px;border-top:1px solid rgba(255,255,255,.18);display:flex;flex-wrap:wrap;gap:4px 14px;font-size:12px;color:rgba(255,255,255,.85)}
+.kpi.main .foot b{color:#fff;font-weight:600;font-variant-numeric:tabular-nums}
+.gapc{display:inline-block;border-radius:10px;padding:0 7px;line-height:18px;font-size:11px;font-weight:700;background:rgba(255,255,255,.16);color:#fff;margin-left:4px}
+.gapc.risk{background:#ffd54f;color:#5d4300}
+.kpi.main .ptag.w{margin-left:0}
+.slp{display:grid;grid-template-columns:auto minmax(0,1.4fr) minmax(0,1fr) auto;gap:8px;align-items:center;background:#f6faf6;border:1px solid #cfe6d1;border-radius:8px;padding:8px 10px;margin-bottom:10px}
+.slp.on{background:#fff8e6;border-color:#f0c36d}
+.slp>b{font-size:12px;color:#17661a;white-space:nowrap}
+.slp.on>b{color:#9a6b00}
+.slp select,.slp input{padding:4px 6px;font-size:13px}
+.slp input{text-align:right;font-variant-numeric:tabular-nums}
+.slp input[readonly]{background:#f3f6fa;color:var(--mut)}
+.slp .ea{font-size:12px;color:var(--mut);white-space:nowrap}
+.slp .sh{grid-column:1/-1;font-size:11.5px;color:#9a6b00}
+@media print{
+ header,main,.qbar,.ov,#dropAll,.toast{display:none!important}
+ body{background:#fff}
+ #report{display:block;padding:8mm;font-size:10.5pt}
+ #report h1{color:#004A96;font-size:17pt;margin:0 0 3mm}
+ #report h3{margin:5mm 0 2mm}
+ #report table{width:100%;border-collapse:collapse;margin:2mm 0}
+ #report th,#report td{border:1px solid #bbb;padding:3px 6px;font-size:9.5pt;text-align:left}
+ #report svg{width:100%;height:auto}
+ .pb{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<header>
+  <svg width="32" height="32" viewBox="0 0 34 34"><rect width="34" height="34" rx="6" fill="#fff" opacity=".15"/><path d="M6 8 L28 26" stroke="#fff" stroke-width="2.5"/><circle cx="11" cy="12" r="2.3" fill="#21A0D2"/><circle cx="18" cy="17.6" r="2.3" fill="#21A0D2"/><circle cx="24" cy="22.4" r="2.3" fill="#21A0D2"/></svg>
+  <div><h1>LTTA-RTI Calculator</h1><div class="sub" data-i="subtitle"></div></div>
+  <div class="sp"></div>
+  <button class="hbtn pri" onclick="openImp()" data-i="impData"></button>
+  <button class="hbtn" onclick="loadExample()" data-i="example"></button>
+  <div class="dd"><button class="hbtn" onclick="ddT(this,event)" data-i="proj"></button><div class="menu">
+    <button onclick="$('fileIn').click()"><span data-i="import"></span><kbd>Ctrl+O</kbd></button>
+    <button onclick="exportJSON()"><span data-i="exportj"></span><kbd>Ctrl+S</kbd></button></div></div>
+  <div class="dd"><button class="hbtn" onclick="ddT(this,event)" data-i="exp"></button><div class="menu">
+    <button onclick="printReport()"><span data-i="pdf"></span><kbd>Ctrl+P</kbd></button>
+    <button onclick="exportCSV()">CSV</button><button onclick="downloadPNG()">PNG</button><button onclick="downloadSVG()">SVG</button></div></div>
+  <button class="hbtn" onclick="toggleLang()" id="langBtn">EN</button>
+  <input type="file" id="xlsIn" accept=".xlsx,.xlsm,.csv,.txt,.tsv" style="display:none" onchange="impFile(event)">
+  <input type="file" id="fileIn" accept=".json" style="display:none" onchange="importJSON(event)">
+</header>
+<div class="qbar" id="qbar"></div>
+<main>
+<section class="col col-data">
+  <div class="card" id="card-ctrl"></div>
+  <div class="card" id="card-cand"></div>
+  <details class="card">
+    <summary data-i="settings"></summary>
+    <div class="set">
+      <div class="full"><label data-i="mode"></label><select id="s_mode">
+        <option value="ctrl" data-i="mCtrl"></option><option value="nc60" data-i="mNc60"></option><option value="nc20" data-i="mNc20"></option></select></div>
+      <div><label data-i="crit"></label><input id="s_crit" value="50% retention"></div>
+      <div><label data-i="f50"></label><input id="s_f50" value="5000, 20000, 60000"></div>
+      <div><label data-i="xaxis"></label><select id="s_axis"><option value="T" data-i="axT"></option><option value="inv" data-i="axInv"></option></select></div>
+      <div><label data-i="minpts"></label><input id="s_min" type="number" min="2" value="4"></div>
+      <div><label data-i="r2min"></label><input id="s_r2" type="number" step="0.01" min="0" max="1" value="0.95"></div>
+      <div><label data-i="conf"></label><select id="s_conf"><option value="0.95">95%</option><option value="0.90">90%</option></select></div>
+      <div><label data-i="dec"></label><input id="s_dec" type="number" min="0" max="3" value="1"></div>
+      <div class="full"><label class="chk" style="font-size:12px;color:var(--txt)"><input type="checkbox" id="s_oven"><span data-i="oven"></span></label></div>
+    </div>
+    <div class="hint" style="margin-top:8px" data-i="sethint"></div>
+  </details>
+</section>
+<section class="col col-res">
+  <div class="card">
+    <div class="kpis">
+      <div class="kpi main">
+        <div class="hd"><div class="l" id="k_rtiL"></div><span id="k_tag"></span></div>
+        <div class="big"><div class="v" id="k_asg">—</div><span class="ulb" id="k_ulb">UL 746B 23.1</span></div>
+        <div class="foot"><span><span data-i="measL"></span> <b id="k_rti">—</b><span class="gapc" id="k_gap"></span></span><span id="k_ci"></span></div></div>
+      <div class="kpi t"><div class="l" data-i="tA"></div><div class="v" id="k_t">—</div><div class="s" id="k_t2"></div></div>
+      <div class="kpi"><div class="l" data-i="delta"></div><div class="v" id="k_d">—</div><div class="s" id="k_d2"></div></div>
+    </div>
+    <div class="chartbox">
+      <div class="chead">
+        <h2 data-i="chartT"></h2>
+        <div class="tabs">
+          <label class="chk"><input type="checkbox" id="o_ctrl" checked><span data-i="showCtrl"></span></label>
+          <label class="chk"><input type="checkbox" id="o_ci" checked><span data-i="showCI"></span></label>
+          <label class="chk"><input type="checkbox" id="o_f50" checked><span>F50</span></label>
+          <button class="btn sm" onclick="downloadSVG()">SVG</button><button class="btn sm" onclick="downloadPNG()">PNG</button>
+        </div>
+      </div>
+      <svg id="chart" viewBox="0 0 760 470"></svg>
+      <div class="hint" data-i="chartHint"></div>
+    </div>
+    <div class="msgwrap">
+      <ul class="msgs" id="msgs"></ul>
+      <ul class="msgs" id="msgMore" style="display:none"></ul>
+      <div class="mbar" id="mbar"></div>
+    </div>
+  </div>
+  <div class="card"><table class="res" id="resTable"></table></div>
+</section>
+<details class="card method" id="methodCard"><summary><span data-i="method"></span><span class="sumhint" data-i="methodHint"></span></summary><div id="formulaBox" class="fm"></div></details>
+</main>
+<div class="ov" id="impOv" onclick="if(event.target===this)closeImp()">
+ <div class="modal">
+  <div class="mh"><h3 data-i="impTitle"></h3><button class="ib" onclick="closeImp()" style="font-size:20px">✕</button></div>
+  <div class="mb">
+   <div class="drop" id="drop" onclick="$('xlsIn').click()"><div style="font-size:15px;font-weight:600" data-i="dropT"></div><div class="hint" style="margin-top:4px" data-i="dropH"></div></div>
+   <div id="impBody" style="display:none">
+    <div class="row"><span class="hint" id="impInfo"></span><span style="flex:1"></span>
+     <label class="chk" id="sheetWrap" style="display:none"><span data-i="sheet"></span> <select id="impSheet" style="width:auto" onchange="impSelectSheet(this.value)"></select></label></div>
+    <div style="margin-top:12px"><label style="font-weight:600" data-i="selProp"></label><div class="chips" id="impProps"></div></div>
+    <div class="pick">
+     <div><label data-i="selHint"></label><div class="hint" data-i="selHint2"></div></div>
+     <div class="c1"><label data-i="ctrl"></label><select id="impC"></select></div>
+     <div class="c2"><label data-i="cand"></label><select id="impK"></select></div>
+     <div class="c1"><label data-i="rtiKnown"></label><input type="number" step="any" id="impRti"></div>
+    </div>
+    <div class="mxwrap"><table class="mx" id="impMx"></table></div>
+    <div class="legend"><span>1234 = <span data-i="lgE"></span></span><span><i style="color:#9a6b00">&gt;6020 (63%)</i> = <span data-i="lgC"></span></span><span>— = <span data-i="lgN"></span></span></div>
+   </div>
+  </div>
+  <div class="mf">
+   <label class="chk" style="margin-right:auto"><input type="checkbox" id="impUseCen"><span data-i="useCen"></span></label>
+   <button class="btn" onclick="impSwap()" data-i="swap"></button>
+   <button class="btn" onclick="closeImp()" data-i="cancel"></button>
+   <button class="btn pri" id="impGo" onclick="impApply()" data-i="apply"></button>
+  </div>
+ </div>
+</div>
+<div id="dropAll"><div data-i="dropHere"></div></div>
+<div id="report"></div>
+<div class="toast" id="toast"></div>
+<script>
+const $=id=>document.getElementById(id);
+const I18N={
+zh:{subtitle:"长期热老化 · 相对温度指数（Arrhenius / UL 746B）",impData:"⬆ 导入老化数据",impDataL:"⬆ 更换 / 查看数据",example:"示例数据",proj:"项目 ▾",import:"导入项目",exportj:"保存项目",exp:"导出 ▾",pdf:"报告 / PDF",
+ settings:"计算设置",mode:"RTI 判定模式（UL 746B Table 19.1）",mCtrl:"有对照材料：按对照 CT 判定（5000–60000 h 截断）",mNc60:"无对照（仅候选）：60000 h 外推寿命 → RTI",mNc20:"无对照（仅候选）：20000 h 外推寿命 → TI（需 IEC 60216-3 线性验证）",
+ crit:"失效判据",f50:"F50 参考时间 (h)",xaxis:"图 X 轴标注",axT:"温度 °C（1/T 刻度）",axInv:"1000/T (K⁻¹)",minpts:"最少温度点数（建议）",r2min:"R² 警告阈值",conf:"置信水平",dec:"小数位数",sethint:"每次打开或刷新页面都会恢复为示例数据和默认设置；如需保留当前数据，请使用“项目 → 保存项目”。",method:"计算方法说明",
+ rtiCand:"候选材料 RTI",tiCand:"候选材料 TI",tA:"判定时间 t（Table 19.1）",delta:"ΔRTI（候选 − 对照）",ctrlRti:"对照 RTI {v} °C",noCtrl:"无对照",
+ chartT:"Arrhenius 图",showCtrl:"对照组",showCI:"置信带",chartHint:"X 轴为 1/T 倒数刻度，Arrhenius 拟合为直线；点击数据点可切换参与 / 排除拟合",
+ ctrl:"对照材料 Control",cand:"候选材料 Candidate",name:"材料名称",prop:"性能",thk:"厚度 (mm)",cThk:"测试厚度",noDat:"无数据",rtiKnown:"已知 RTI (°C)",temp:"老化温度 (°C)",life:"失效时间 (h)",use:"参与",
+ addRow:"+ 添加行",clear:"清空",
+ param:"拟合参数",n:"有效点数 / 温度数",slope:"斜率 b (K)",inter:"截距 a",r2:"R²",ea:"活化能 Ea (kJ/mol)",tempAt:"{h} h 对应温度 (°C)",
+ ciLbl:"{c} 置信区间",ciTip:"仅包含候选组拟合的不确定度，未传递对照组 CT 的不确定度",
+ ruleMid:"= CT，在 5000–60000 h 区间内",ruleLo:"CT = {ct} h < 5000 h → 取 5000 h",ruleHi:"CT = {ct} h > 60000 h → 取 60000 h",ruleNc60:"无对照 → 60000 h（19.15）",ruleNc20:"无对照 TI → 20000 h（19.15）",
+ eNum:"{g}：第 {r} 行不是有效数字",eTime:"{g}：第 {r} 行时间必须 > 0",eTemp:"{g}：第 {r} 行温度不合理",eHalf:"{g}：第 {r} 行温度和时间只填了一项",eFew:"{g}：至少需要 2 个不同温度的有效数据点",eSlope:"{g}：拟合斜率 ≤ 0（温度越高寿命越长），请检查数据",eRti:"请输入对照材料已知 RTI",
+ wPts:"{g}：只有 {n} 个温度点，少于建议的 {m} 个",wR2:"{g}：R² = {v}，低于阈值 {t}",wProp:"对照与候选的性能不同（{a} vs {b}），关联需同一性能",wThk:"对照与候选的测试厚度不同（{a} vs {b} mm），请确认对照 RTI 对应的厚度",
+ wExt:"外推：{l}",sep:"；",xT:"t 为候选最长实测寿命 {mx} h 的 {k} 倍",xK:"候选 RTI 低于候选最低老化温度 {d} °C",xC:"对照 RTI 距对照老化温度区间 {d} °C",
+ wNc20:"TI 模式：数据须先按 IEC 60216-3 完成线性验证（本工具未计算）",wCen:"{g}：{T} °C 删失点已老化 {h} h 仍未失效，但拟合预测寿命仅 {p} h —— 拟合低估该温度寿命，RTI 可能偏保守",
+ wEst:"{g}：{n} 个失效时间为人工预估值（非实测）：{l}",oOk:"数据校验通过，没有发现问题。",iCI:"自由度不足（候选组需 ≥3 个点），无法给出置信区间",more:"展开其余 {n} 条",less:"收起",
+ estTag:"预估",estTip:"原实测值：{o}（已人工修改为预估值）",undo:"恢复实测值",estLg:"<b>红色</b> = 人工预估值（非实测），灰色删除线 = 原实测值；点 ↺ 恢复",cenTip:"未到寿命终点（删失）：{x}",
+ tipPt:"点击：参与 / 排除拟合",ctrlOff:"“无对照”模式：对照材料数据不参与计算",noData:"暂无有效数据 —— 点击右上角“导入老化数据”或“示例数据”开始",
+ saved:"已保存",loaded:"已导入",exNote:"已载入示例数据",
+ impTitle:"导入老化数据（EoL 模板）",dropT:"点击选择或拖入 Excel / CSV 文件",dropH:"模板格式：A 列 P（性能），B 列 d（厚度 mm），C 列 T（温度 °C），D 列起每列一个材料；“>6020 (63%)” 表示未到终点",dropHere:"⬆ 松开鼠标导入老化数据",
+ sheet:"工作表",selProp:"① 选择性能 / 厚度（候选材料）",selHint:"② 选择材料",selHint2:"下拉选择，或点击表头：第 1 次 → 对照，第 2 次 → 候选",lgE:"已到寿命终点，参与拟合",lgC:"未到终点（删失），默认不参与拟合",lgN:"无数据",
+ useCen:"删失点也参与拟合（不推荐）",swap:"⇄ 交换",cancel:"取消",apply:"导入到计算器",impInfo:"{f} · {n} 个材料 · {g} 组性能/厚度",impPts:"{e} 个终点 + {c} 个删失",
+ impNeed:"对照和候选需选择不同材料，且各自至少有 2 个温度的终点数据",impDone:"已导入：{p}，对照 {dc} mm / 候选 {dk} mm",impBad:"无法识别文件",impNoHdr:"没有找到 P / d / T 表头",same:"对照和候选是同一材料",
+ qSrc:"数据源",qProp:"性能 · 厚度（候选）",qUnlinkT:"断开数据源，切换为手动编辑模式",qOpenT:"查看全部材料 / 批量 RTI 预览，或更换文件",pts2:"{e} 终点 · {c} 删失",slpT:"斜率 b",sFit:"自动拟合（最小二乘）",sMan:"手动输入斜率",sCtrl:"采用对照材料斜率",sThk:"采用候选 {d} mm 斜率",slpHint:"斜率固定为 b，截距按 a = mean(ln t − b/T) 求得（参考 UL 746B 20.2.11：沿用基准斜率、仅平移截距）。适用于低厚度仅 2 个温度点的情况。",wSlp:"候选斜率非拟合值：b = {b} K（{src}），截距由数据平移确定 —— 结果仅供研发评估，需与 UL 确认",eSlpIn:"请输入有效的候选斜率 b（> 0）",eSlpNA:"所选斜率来源不可用（{src}），请改选其他来源",fixedLg:"fixed slope",slpSrcMan:"手动输入",onePt:"仅 1 点",methodHint:"计算公式 · UL 746B 判定规则 · 多厚度 / 多性能 RTI",asgL:"候选材料 RTI（UL 判定）",measL:"计算值",gap:"高于档位 +{g} °C",gapR:"⚠ 距档位仅 +{g} °C",oven:"烘箱温差 ≤ 3.0 °C（>180 °C 时允许 190 / 210 °C 档）",wGap:"候选 RTI 计算值 {m} °C 仅高出判定档位 {a} °C {g} °C，数据小幅波动即可能降档",tiAsg:"候选材料 TI（UL 判定）"},
+en:{subtitle:"Long-Term Thermal Aging · Relative Temperature Index (Arrhenius / UL 746B)",impData:"⬆ Import aging data",impDataL:"⬆ Change / view data",example:"Example",proj:"Project ▾",import:"Open project",exportj:"Save project",exp:"Export ▾",pdf:"Report / PDF",
+ settings:"Settings",mode:"RTI assignment mode (UL 746B Table 19.1)",mCtrl:"With control: assign at control CT (bounded 5000–60000 h)",mNc60:"No control (candidate only): 60000 h extrapolated life → RTI",mNc20:"No control (candidate only): 20000 h extrapolated life → TI (IEC 60216-3 linearity)",
+ crit:"End-of-life criterion",f50:"F50 reference times (h)",xaxis:"X-axis labels",axT:"Temperature °C (1/T scale)",axInv:"1000/T (K⁻¹)",minpts:"Min. temperature levels",r2min:"R² warning threshold",conf:"Confidence level",dec:"Decimals",sethint:"Each time the page is opened or refreshed it resets to the example data and default settings; use “Project → Save project” to keep your work.",method:"Method",
+ rtiCand:"Candidate RTI",tiCand:"Candidate TI",tA:"Assignment time t (Table 19.1)",delta:"ΔRTI (cand. − ctrl.)",ctrlRti:"Control RTI {v} °C",noCtrl:"No control",
+ chartT:"Arrhenius plot",showCtrl:"Control",showCI:"Conf. band",chartHint:"X axis uses a reciprocal (1/T) scale, so the Arrhenius fit is a straight line; click a point to include / exclude it",
+ ctrl:"Control material",cand:"Candidate material",name:"Material",prop:"Property",thk:"Thickness (mm)",cThk:"Test thickness",noDat:"no data",rtiKnown:"Known RTI (°C)",temp:"Aging temp. (°C)",life:"Time to EOL (h)",use:"Use",
+ addRow:"+ Add row",clear:"Clear",
+ param:"Fit parameters",n:"Points / temperatures",slope:"Slope b (K)",inter:"Intercept a",r2:"R²",ea:"Activation energy Ea (kJ/mol)",tempAt:"Temperature at {h} h (°C)",
+ ciLbl:"{c} confidence interval",ciTip:"Candidate-fit uncertainty only; control CT uncertainty not propagated",
+ ruleMid:"= CT, within 5000–60000 h",ruleLo:"CT = {ct} h < 5000 h → 5000 h",ruleHi:"CT = {ct} h > 60000 h → 60000 h",ruleNc60:"No control → 60000 h (19.15)",ruleNc20:"No control TI → 20000 h (19.15)",
+ eNum:"{g}: row {r} is not a valid number",eTime:"{g}: row {r} time must be > 0",eTemp:"{g}: row {r} temperature is invalid",eHalf:"{g}: row {r} has only temperature or time",eFew:"{g}: at least 2 valid points at different temperatures are required",eSlope:"{g}: fitted slope ≤ 0 – check data",eRti:"Enter the known RTI of the control material",
+ wPts:"{g}: only {n} temperature levels (recommended {m})",wR2:"{g}: R² = {v}, below threshold {t}",wProp:"Control and candidate properties differ ({a} vs {b})",wThk:"Control and candidate test thicknesses differ ({a} vs {b} mm) – check which thickness the control RTI applies to",
+ wExt:"Extrapolation: {l}",sep:"; ",xT:"t is {k}× the longest measured candidate life ({mx} h)",xK:"candidate RTI is {d} °C below the lowest candidate aging temperature",xC:"control RTI is {d} °C outside the control aging range",
+ wNc20:"TI mode: data must pass IEC 60216-3 linearity validation (not calculated here)",wCen:"{g}: censored point at {T} °C survived {h} h but the fit predicts {p} h – fit underestimates life; RTI may be conservative",
+ wEst:"{g}: {n} time(s) to EoL are manual estimates (not measured): {l}",oOk:"All checks passed.",iCI:"Too few degrees of freedom (≥3 candidate points) for a confidence interval",more:"Show {n} more",less:"Show less",
+ estTag:"est.",estTip:"Original measured value: {o} (replaced by a manual estimate)",undo:"Restore measured value",estLg:"<b>Red</b> = manual estimate (not measured); grey strikethrough = original measured value; ↺ restores",cenTip:"End-of-life not reached (censored): {x}",
+ tipPt:"Click: include / exclude",ctrlOff:"No-control mode: control data are not used",noData:"No valid data – use “Import aging data” or “Example” to start",
+ saved:"Saved",loaded:"Imported",exNote:"Example loaded",
+ impTitle:"Import aging data (EoL template)",dropT:"Click or drop an Excel / CSV file here",dropH:"Template: col A P (property), col B d (thickness, mm), col C T (°C), one material per column from D; “>6020 (63%)” = EoL not reached",dropHere:"⬆ Drop to import aging data",
+ sheet:"Sheet",selProp:"① Select property / thickness (candidate)",selHint:"② Select materials",selHint2:"Use the drop-downs, or click headers: 1st → control, 2nd → candidate",lgE:"EoL reached, used in fit",lgC:"not reached (censored), excluded by default",lgN:"no data",
+ useCen:"Use censored points in fit (not recommended)",swap:"⇄ Swap",cancel:"Cancel",apply:"Import to calculator",impInfo:"{f} · {n} materials · {g} property/thickness sets",impPts:"{e} EoL + {c} censored",
+ impNeed:"Choose two different materials, each with EoL data at ≥2 temperatures",impDone:"Imported: {p}, control {dc} mm / candidate {dk} mm",impBad:"Unrecognized file",impNoHdr:"Header P / d / T not found",same:"Control and candidate are the same material",
+ qSrc:"Source",qProp:"Property · thickness (candidate)",qUnlinkT:"Unlink the data source and switch to manual editing",qOpenT:"View all materials / batch RTI preview, or change file",pts2:"{e} EoL · {c} censored",slpT:"Slope b",sFit:"Auto fit (least squares)",sMan:"Manual slope",sCtrl:"Use control slope",sThk:"Use candidate {d} mm slope",slpHint:"Slope fixed at b; intercept a = mean(ln t − b/T) (cf. UL 746B 20.2.11: keep reference slope, shift intercept). For thin thicknesses with only 2 aging temperatures.",wSlp:"Candidate slope is not fitted: b = {b} K ({src}); intercept shifted to data – R&D estimate only, confirm with UL",eSlpIn:"Enter a valid candidate slope b (> 0)",eSlpNA:"Selected slope source unavailable ({src}); choose another",fixedLg:"fixed slope",slpSrcMan:"manual",onePt:"1 point only",methodHint:"Equations · UL 746B assignment rules · multi-thickness / multi-property RTI",asgL:"Candidate RTI (assigned)",measL:"Calculated",gap:"+{g} °C above class",gapR:"⚠ only +{g} °C above class",oven:"Oven differential ≤ 3.0 °C (allows 190 / 210 °C classes above 180 °C)",wGap:"Calculated candidate RTI {m} °C is only {g} °C above the assigned class {a} °C – small data scatter may drop it one class",tiAsg:"Candidate TI (assigned)"}
+};
+let LANG=localStorage.getItem('rti_lang')||'zh';
+const t=(k,o={})=>{let s=(I18N[LANG][k]??k);for(const x in o)s=s.split('{'+x+'}').join(o[x]);return s;};
+const PROPS=["TS","TStr","TS Imp","IS (Izod)","IzU","IS (Charpy)","ChN","FS","DS (Dielectric)","Elec","Other"];
+const DEF={ctrl:{name:"",prop:"TS",thk:"3",rti:95,src:"",rows:[[140,525,1],[130,1010,1],[120,2498,1],[110,5555,1]]},
+           cand:{name:"",prop:"TS",thk:"3",src:"",slope:{mode:"fit",b:"",gi:-1},rows:[[130,764,1],[120,1794,1],[110,6092,1],[100,9000,1]]}};
+function sane(x){const o=structuredClone(DEF);if(!x||!x.ctrl||!x.cand)return o;['ctrl','cand'].forEach(g=>{const d=x[g];o[g].name=d.name??'';o[g].prop=d.prop||'TS';o[g].thk=d.thk??'';o[g].src=d.src??'';if(g==='ctrl')o[g].rti=d.rti??95;else o[g].slope=Object.assign({mode:'fit',b:'',gi:-1},d.slope||{});if(Array.isArray(d.rows)&&d.rows.length)o[g].rows=d.rows;});return o;}
+['rti_state','rti_settings'].forEach(k=>{try{localStorage.removeItem(k);}catch(e){}});
+let S=structuredClone(DEF);
+const SET_IDS=['s_mode','s_crit','s_f50','s_axis','s_min','s_r2','s_conf','s_dec','s_oven'];
+let LAST=null,EXC={},UI={msgOpen:0},IMP=null;
+const linked=()=>!!(IMP&&IMP.groups&&IMP.groups.length&&S.cand.src);
+const PTYPE=p=>{const s=String(p||'').toLowerCase();
+ if(/elec|diel|ds\b|cti|volume|surface/.test(s))return 'Elec';
+ if(/imp|izod|izu|izn|charpy|chn|chu|is\b|\bis /.test(s))return 'Mech w/ Imp';
+ if(/ts|tstr|tens|fs|flex|mech/.test(s))return 'Mech w/o Imp';
+ return '';};
+const ptag=(g,white)=>{const d=S[g],ty=PTYPE(d.prop);if(!d.prop&&!d.thk)return '';
+ return `<span class="ptag ${white?'w':g==='ctrl'?'c':'k'}" title="${esc(d.prop)} · ${esc(d.thk)} mm${ty?' → RTI '+ty:''}">${esc(d.prop)} · ${esc(d.thk)} mm</span>`;};
+const isEst=r=>!!r&&r[4]!==undefined&&r[4]!==null&&r[4]!=='';
+const origTxt=r=>r[3]?String(r[3]).replace(/\s*\(.*\)\s*$/,''):String(r[4]);
+const retOf=raw=>(String(raw).match(/\(([^)]*)\)/)||[])[1]||'';
+const K0=273.15,RGAS=8.314462618;
+function lgam(z){const g=[676.5203681218851,-1259.1392167224028,771.32342877765313,-176.61502916214059,12.507343278686905,-0.13857109526572012,9.9843695780195716e-6,1.5056327351493116e-7];
+ if(z<0.5)return Math.log(Math.PI/Math.sin(Math.PI*z))-lgam(1-z);z-=1;let x=0.99999999999980993;for(let i=0;i<8;i++)x+=g[i]/(z+i+1);const tt=z+7.5;return 0.5*Math.log(2*Math.PI)+(z+0.5)*Math.log(tt)-tt+Math.log(x);}
+function cf(x,a,b){let qab=a+b,qap=a+1,qam=a-1,c=1,d=1-qab*x/qap;d=1/(Math.abs(d)<1e-30?1e-30:d);let h=d;
+ for(let m=1;m<200;m++){let m2=2*m,aa=m*(b-m)*x/((qam+m2)*(a+m2));d=1+aa*d;d=1/(Math.abs(d)<1e-30?1e-30:d);c=1+aa/c;if(Math.abs(c)<1e-30)c=1e-30;h*=d*c;
+ aa=-(a+m)*(qab+m)*x/((a+m2)*(qap+m2));d=1+aa*d;d=1/(Math.abs(d)<1e-30?1e-30:d);c=1+aa/c;if(Math.abs(c)<1e-30)c=1e-30;const del=d*c;h*=del;if(Math.abs(del-1)<3e-12)break;}return h;}
+function betaInc(x,a,b){if(x<=0)return 0;if(x>=1)return 1;const bt=Math.exp(lgam(a+b)-lgam(a)-lgam(b)+a*Math.log(x)+b*Math.log(1-x));return x<(a+1)/(a+b+2)?bt*cf(x,a,b)/a:1-bt*cf(1-x,b,a)/b;}
+function tcdf(x,df){const b=betaInc(df/(df+x*x),df/2,0.5);return x>=0?1-b/2:b/2;}
+function tq(p,df){let lo=0,hi=1000;for(let i=0;i<100;i++){const m=(lo+hi)/2;if(tcdf(m,df)<p)lo=m;else hi=m;}return (lo+hi)/2;}
+function fit(pts){
+ const n=pts.length,x=pts.map(p=>1/(p.T+K0)),y=pts.map(p=>Math.log(p.h));
+ const xm=x.reduce((s,v)=>s+v,0)/n,ym=y.reduce((s,v)=>s+v,0)/n;let sxx=0,sxy=0,syy=0;
+ for(let i=0;i<n;i++){sxx+=(x[i]-xm)**2;sxy+=(x[i]-xm)*(y[i]-ym);syy+=(y[i]-ym)**2;}
+ const b=sxy/sxx,a=ym-b*xm,sse=Math.max(0,syy-b*sxy),r2=syy>0?1-sse/syy:1,df=n-2,s=df>0?Math.sqrt(sse/df):NaN;
+ return {n,levels:new Set(pts.map(p=>p.T)).size,a,b,r2,df,s,xm,sxx,seB:df>0?s/Math.sqrt(sxx):NaN,Ea:b*RGAS/1000,
+  lnt:T=>a+b/(T+K0),life:T=>Math.exp(a+b/(T+K0)),temp:h=>b/(Math.log(h)-a)-K0,
+  band(T,tc){const x0=1/(T+K0);return tc*s*Math.sqrt(1/n+(x0-xm)**2/sxx);},
+  Tmin:Math.min(...pts.map(p=>p.T)),Tmax:Math.max(...pts.map(p=>p.T)),hmax:Math.max(...pts.map(p=>p.h)),pts};
+}
+function fitFixed(pts,b){
+ const n=pts.length,x=pts.map(p=>1/(p.T+K0)),y=pts.map(p=>Math.log(p.h));
+ const xm=x.reduce((s,v)=>s+v,0)/n,ym=y.reduce((s,v)=>s+v,0)/n,a=ym-b*xm;
+ let sse=0,syy=0,sxx=0;for(let i=0;i<n;i++){sse+=(y[i]-a-b*x[i])**2;syy+=(y[i]-ym)**2;sxx+=(x[i]-xm)**2;}
+ const df=n-1,s=df>0?Math.sqrt(sse/df):NaN,r2=syy>0?1-sse/syy:NaN;
+ return {n,levels:new Set(pts.map(p=>p.T)).size,a,b,r2,df,s,xm,sxx,seB:NaN,Ea:b*RGAS/1000,fixed:true,
+  lnt:T=>a+b/(T+K0),life:T=>Math.exp(a+b/(T+K0)),temp:h=>b/(Math.log(h)-a)-K0,
+  band(T,tc){return tc*s*Math.sqrt(1/n);},
+  Tmin:Math.min(...pts.map(p=>p.T)),Tmax:Math.max(...pts.map(p=>p.T)),hmax:Math.max(...pts.map(p=>p.h)),pts};
+}
+/* candidate slope source */
+function slopeSrc(Fc){const sl=S.cand.slope||{mode:'fit'};
+ if(sl.mode==='man'){const b=Number(sl.b);return {b:(isFinite(b)&&b>0&&String(sl.b).trim()!=='')?b:NaN,src:t('slpSrcMan'),need:1};}
+ if(sl.mode==='ctrl')return {b:Fc?Fc.b:NaN,src:t('sCtrl'),need:1};
+ if(sl.mode==='thk'){const G=IMP&&IMP.groups&&IMP.groups[sl.gi];if(!G)return {b:NaN,src:t('sThk',{d:'?'}),need:1};
+  const p=G.rows.filter(r=>r.vals[IMP.k]&&!r.vals[IMP.k].bad&&!r.vals[IMP.k].cen).map(r=>({T:r.T,h:r.vals[IMP.k].h}));
+  const ok=new Set(p.map(q=>q.T)).size>=2;return {b:ok?fit(p).b:NaN,src:t('sThk',{d:G.d}),need:1};}
+ return null;}
+function ciTemp(F,lnT,tc,sign){const f=T=>F.lnt(T)+sign*F.band(T,tc)-lnT;let lo=-100,hi=600;if(f(lo)*f(hi)>0)return NaN;
+ for(let i=0;i<200;i++){const m=(lo+hi)/2;if(f(lo)*f(m)<=0)hi=m;else lo=m;}return (lo+hi)/2;}
+/* UL 746B 23.1 standard temperature classifications (round down) */
+function ulClass(x,oven3){if(!isFinite(x))return NaN;const e=1e-9;
+ if(x<=130+e)return Math.floor(x/5+e)*5;
+ if(x<180-e){const c=[130,140,150,155,160,170].filter(v=>v<=x+e);return c[c.length-1];}
+ const c=[180];if(oven3)c.push(190);for(let v=200;v<=x+e;v+=20){c.push(v);if(oven3&&v===200)c.push(210);}
+ return Math.max(...c.filter(v=>v<=x+e));}
+function assignTime(CT,mode){
+ if(mode==='nc60')return {tA:60000,rule:'Nc60'};
+ if(mode==='nc20')return {tA:20000,rule:'Nc20'};
+ if(CT<5000)return {tA:5000,rule:'Lo'};
+ if(CT>60000)return {tA:60000,rule:'Hi'};
+ return {tA:CT,rule:'Mid'};
+}
+function parseGroup(g,label,errs){
+ const pts=[];
+ S[g].rows.forEach((r,i)=>{
+  const a=String(r[0]??'').trim(),b=String(r[1]??'').trim();r.bad=[0,0];
+  if(!a&&!b)return;
+  if(!a||!b){errs.push(t('eHalf',{g:label,r:i+1}));r.bad=[!a,!b];return;}
+  const T=Number(a.replace(',','.')),h=Number(b.replace(',','.'));
+  if(!isFinite(T)||!isFinite(h)){errs.push(t('eNum',{g:label,r:i+1}));r.bad=[!isFinite(T),!isFinite(h)];return;}
+  if(T<=-K0){errs.push(t('eTemp',{g:label,r:i+1}));r.bad=[1,0];return;}
+  if(h<=0){errs.push(t('eTime',{g:label,r:i+1}));r.bad=[0,1];return;}
+  const est=isEst(r),cen=!!r[3]&&!est;
+  if(r[2])pts.push({T,h,i,cen,est});else (EXC[g]=EXC[g]||[]).push({T,h,i,cen,est});
+ });
+ return pts;
+}
+function getSettings(){
+ const f50=String($('s_f50').value).split(/[\s,，;；]+/).map(Number).filter(v=>isFinite(v)&&v>0);
+ return {mode:$('s_mode').value,crit:$('s_crit').value,f50:[...new Set(f50)].sort((a,b)=>a-b),min:+$('s_min').value||2,r2:+$('s_r2').value||0,
+  conf:+$('s_conf').value,dec:Math.min(3,Math.max(0,+$('s_dec').value||0)),axis:$('s_axis').value,oven:$('s_oven').checked};
+}
+const fmt=(v,d)=>isFinite(v)?v.toFixed(d):'—';
+const fmtH=v=>isFinite(v)?Math.round(v).toLocaleString('en-US'):'—';
+function compute(){
+ const set=getSettings(),nc=set.mode!=='ctrl',errs=[],warns=[],infos=[],Lc=t('ctrl'),Lk=t('cand');
+ EXC={};const pc=parseGroup('ctrl',Lc,nc?[]:errs),pk=parseGroup('cand',Lk,errs);
+ let Fc=null,Fk=null;
+ [[pc,Lc,'c'],[pk,Lk,'k']].forEach(([p,L,w])=>{
+  if(w==='c'&&nc)return;
+  const SS=w==='k'?slopeSrc(Fc):null;
+  if(SS){if(!isFinite(SS.b)||SS.b<=0){errs.push(S.cand.slope.mode==='man'?t('eSlpIn'):t('eSlpNA',{src:SS.src}));return;}
+   if(!p.length){errs.push(t('eFew',{g:L}));return;}
+   Fk=fitFixed(p,SS.b);Fk.src=SS.src;warns.unshift(t('wSlp',{b:SS.b.toFixed(1),src:SS.src}));
+   if(Fk.levels<set.min)warns.push(t('wPts',{g:L,n:Fk.levels,m:set.min}));return;}
+  if(new Set(p.map(q=>q.T)).size<2){errs.push(t('eFew',{g:L}));return;}
+  const F=fit(p);
+  if(F.b<=0)errs.push(t('eSlope',{g:L}));
+  if(F.levels<set.min)warns.push(t('wPts',{g:L,n:F.levels,m:set.min}));
+  if(F.r2<set.r2)warns.push(t('wR2',{g:L,v:F.r2.toFixed(4),t:set.r2}));
+  if(w==='c')Fc=F;else Fk=F;
+ });
+ const rtiC=Number(S.ctrl.rti);
+ if(!nc&&(String(S.ctrl.rti??'').trim()===''||!isFinite(rtiC)))errs.push(t('eRti'));
+ if(!nc&&S.ctrl.prop!==S.cand.prop)warns.push(t('wProp',{a:S.ctrl.prop,b:S.cand.prop}));
+ if(!nc&&String(S.ctrl.thk).trim()!==String(S.cand.thk).trim())infos.push(t('wThk',{a:S.ctrl.thk,b:S.cand.thk}));
+ [['ctrl',Fc,Lc],['cand',Fk,Lk]].forEach(([g,F,L])=>{if(!F)return;(EXC[g]||[]).filter(p=>p.cen).forEach(p=>{const pr=F.life(p.T);if(p.h>pr)warns.push(t('wCen',{g:L,T:p.T,h:fmtH(p.h),p:fmtH(pr)}));});});
+ ['ctrl','cand'].forEach(g=>{if(g==='ctrl'&&nc)return;const e=S[g].rows.filter(r=>isEst(r)&&String(r[0]??'').trim()!=='');
+  if(e.length)warns.unshift(t('wEst',{g:g==='ctrl'?Lc:Lk,n:e.length,l:e.map(r=>`${r[0]} °C: ${origTxt(r)} → ${r[1]} h`).join(t('sep'))}));});
+ const R={errs,warns,infos,Fc,Fk,rtiC,set,nc};
+ if(errs.length||!Fk||(!nc&&!Fc))return R;
+ if(nc){R.CT=NaN;}else{R.lnCT=Fc.lnt(rtiC);R.CT=Math.exp(R.lnCT);}
+ const A=assignTime(R.CT,set.mode);R.tA=A.tA;R.rule=A.rule;R.lnTA=Math.log(R.tA);
+ R.rti=Fk.b/(R.lnTA-Fk.a)-K0;
+ if(!nc)R.rtiAtCT=Fk.b/(R.lnCT-Fk.a)-K0;
+ R.asg=ulClass(R.rti,set.oven);R.gap=R.rti-R.asg;
+ if(isFinite(R.asg)&&R.gap<2)warns.unshift(t('wGap',{m:R.rti.toFixed(1),a:R.asg,g:R.gap.toFixed(1)}));
+ if(Fk.df>=1){const tc=tq(1-(1-set.conf)/2,Fk.df),a=ciTemp(Fk,R.lnTA,tc,1),b=ciTemp(Fk,R.lnTA,tc,-1);R.ciLo=Math.min(a,b);R.ciHi=Math.max(a,b);}
+ else infos.push(t('iCI'));
+ if(set.mode==='nc20')warns.unshift(t('wNc20'));
+ const ex=[];
+ if(R.tA>Fk.hmax)ex.push(t('xT',{mx:fmtH(Fk.hmax),k:(R.tA/Fk.hmax).toFixed(1)}));
+ if(R.rti<Fk.Tmin)ex.push(t('xK',{d:(Fk.Tmin-R.rti).toFixed(1)}));
+ if(!nc){const dC=Math.max(0,Fc.Tmin-rtiC,rtiC-Fc.Tmax);if(dC>0)ex.push(t('xC',{d:dC.toFixed(1)}));}
+ if(ex.length)warns.push(t('wExt',{l:ex.join(t('sep'))}));
+ return R;
+}
+const ruleTxt=R=>t('rule'+R.rule,{ct:fmtH(R.CT)});
+const ICON='<svg width="10" height="12" viewBox="0 0 10 12"><path d="M1 .5h5.5L9 3v8.5H1z" fill="none" stroke="currentColor"/><path d="M6.5 .5V3H9" fill="none" stroke="currentColor"/></svg>';
+function esc(s){return String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+/* control thickness: groups with same property as candidate */
+function sameP(){if(!IMP||!IMP.groups.length)return [];const P=IMP.groups[IMP.gi].P;return IMP.groups.map((g,i)=>({g,i})).filter(o=>o.g.P===P);}
+function autoGic(){const sp=sameP();if(!sp.length)return IMP.gi;
+ const own=sp.find(o=>o.i===IMP.gi);if(own&&own.g.cnt[IMP.c].lv>=2)return own.i;
+ const cur=sp.find(o=>o.i===IMP.gic);if(cur&&cur.g.cnt[IMP.c].lv>=2)return cur.i;
+ const best=[...sp].sort((a,b)=>b.g.cnt[IMP.c].lv-a.g.cnt[IMP.c].lv)[0];return best.g.cnt[IMP.c].lv>=2?best.i:IMP.gi;}
+function ctrlLv(j){return Math.max(0,...sameP().map(o=>o.g.cnt[j].lv));}
+function thkSel(){
+ const opts=sameP().map(o=>{const lv=o.g.cnt[IMP.c].lv;return `<option value="${o.i}" ${o.i===IMP.gic?'selected':''} ${lv<2?'disabled':''}>${esc(o.g.d)} mm${lv<2?' ('+t('noDat')+')':''}</option>`;}).join('');
+ return `<div class="thkbox"><label>${t('cThk')}</label><select onchange="IMP.gic=+this.value;impApply(1)">${opts}</select></div>`;}
+function thkSelK(){
+ const opts=sameP().map(o=>{const lv=o.g.cnt[IMP.k].lv;return `<option value="${o.i}" ${o.i===IMP.gi?'selected':''} ${lv<1?'disabled':''}>${esc(o.g.d)} mm${lv<1?' ('+t('noDat')+')':lv<2?' ('+t('onePt')+')':''}</option>`;}).join('');
+ return `<div class="thkbox k"><label>${t('cThk')}</label><select onchange="IMP.gi=+this.value;IMP.gic=autoGic();impApply(1)">${opts}</select></div>`;}
+function resetSlope(){S.cand.slope={mode:'fit',b:'',gi:-1};}
+function groupCard(g){
+ const d=S[g],col=g==='ctrl'?'var(--ctrl)':'var(--cand)';
+ const opts=[...new Set([...PROPS,d.prop].filter(Boolean))].map(p=>`<option ${p===d.prop?'selected':''}>${esc(p)}</option>`).join('');
+ const src=d.src?String(d.src).replace(/\s*·\s*[^·]*\bmm\s*$/,''):'';
+ const rows=d.rows.map((r,i)=>{
+  const est=isEst(r),cen=!!r[3],bad=r.bad||[0,0];
+  let badge='';
+  if(est)badge=`<span class="estb" title="${esc(t('estTip',{o:r[3]||r[4]}))}"><s>${esc(origTxt(r))}</s><span class="tg">${t('estTag')}</span><button type="button" title="${esc(t('undo'))}" onclick="undoEst('${g}',${i})">↺</button></span>`;
+  else if(cen)badge=`<span class="cenb" title="${esc(t('cenTip',{x:r[3]}))}">&gt; ${esc(retOf(r[3])||'censored')}</span>`;
+  return `<tr class="${r[2]?'':'off'}"><td class="c">${i+1}</td>
+   <td><input type="number" step="any" value="${esc(r[0])}" data-g="${g}" data-r="${i}" data-c="0" class="${bad[0]?'bad':''}"></td>
+   <td class="tc"><input type="number" step="any" value="${esc(r[1])}" data-g="${g}" data-r="${i}" data-c="1" class="${bad[1]?'bad':''} ${est?'est':''}">${badge}</td>
+   <td class="c"><input type="checkbox" ${r[2]?'checked':''} data-g="${g}" data-r="${i}" data-c="2"></td>
+   <td class="c"><button class="ib" title="Delete" onclick="delRow('${g}',${i})">✕</button></td></tr>`;}).join('');
+ const lk=linked();
+ const rtiBox=g==='ctrl'?`<div class="rtibox"><label title="${esc(d.prop)} · ${esc(d.thk)} mm${PTYPE(d.prop)?' · '+PTYPE(d.prop):''}">${t('rtiKnown')}</label><input type="number" step="any" data-m="ctrl.rti" value="${esc(d.rti)}"></div>`:'';
+ return `<div class="gh"><span class="dot" style="background:${col}"></span><h2>${t(g)}</h2>${!lk&&src?`<span class="srcchip" title="${esc(src)}">${ICON}${esc(src)}</span>`:''}</div>
+ ${lk?`<div class="mgrid lk${g==='ctrl'?' c3':' c2'}">
+  <div class="fname"><label>${t('name')}</label><input class="mname" data-m="${g}.name" value="${esc(d.name)}" title="${esc(d.name)}"></div>${g==='ctrl'?thkSel()+rtiBox:thkSelK()}</div>`
+ :`<div class="mgrid">
+  <div class="fname"><label>${t('name')}</label><input class="mname" data-m="${g}.name" value="${esc(d.name)}" title="${esc(d.name)}" placeholder="e.g. PA66 GF30 FR"></div>
+  <div><label>${t('prop')}</label><select data-m="${g}.prop">${opts}</select></div>
+  <div><label>${t('thk')}</label><input data-m="${g}.thk" value="${esc(d.thk)}"></div>
+  ${rtiBox||'<div></div>'}
+ </div>`}
+ ${g==='cand'?slopeBox():''}
+ <table class="dt"><thead><tr><th class="c">#</th><th>${t('temp')}</th><th>${t('life')}${ptag(g)}</th><th class="c">${t('use')}</th><th></th></tr></thead><tbody>${rows}</tbody></table>
+ ${d.rows.some(isEst)?`<div class="estLg">${t('estLg')}</div>`:''}
+ <div class="row"><button class="btn" onclick="addRow('${g}')">${t('addRow')}</button><button class="btn" onclick="clearRows('${g}')">${t('clear')}</button></div>`;
+}
+function slopeBox(){
+ const sl=S.cand.slope||{mode:'fit'},on=sl.mode!=='fit';
+ let o=`<option value="fit" ${sl.mode==='fit'?'selected':''}>${t('sFit')}</option><option value="man" ${sl.mode==='man'?'selected':''}>${t('sMan')}</option><option value="ctrl" ${sl.mode==='ctrl'?'selected':''}>${t('sCtrl')}</option>`;
+ if(linked()){const P=IMP.groups[IMP.gi].P;IMP.groups.forEach((G,i)=>{if(i===IMP.gi||G.P!==P)return;const lv=G.cnt[IMP.k].lv;
+  o+=`<option value="thk:${i}" ${sl.mode==='thk'&&sl.gi===i?'selected':''} ${lv<2?'disabled':''}>${esc(t('sThk',{d:G.d}))}${lv<2?' ('+t('noDat')+')':''}</option>`;});}
+ return `<div class="slp ${on?'on':''}"><b>${t('slpT')}</b><select id="slpMode">${o}</select>
+  <input id="slpB" type="number" step="any" ${sl.mode==='man'?'':'readonly'} value="${esc(sl.mode==='man'?sl.b:'')}" placeholder="K" title="b = Ea/R (K)">
+  <span class="ea" id="slpEa">—</span>${on?`<div class="sh">${esc(t('slpHint'))}</div>`:''}</div>`;}
+function bindSlope(){const m=$('slpMode'),bi=$('slpB');if(!m)return;
+ m.onchange=()=>{const v=m.value,sl=S.cand.slope;if(v.startsWith('thk:')){sl.mode='thk';sl.gi=+v.slice(4);}else{sl.mode=v;}
+  if(v==='man'&&(sl.b===''||!isFinite(Number(sl.b)))&&LAST&&LAST.Fk)sl.b=LAST.Fk.b.toFixed(1);buildCards();refresh();};
+ bi.oninput=()=>{if(S.cand.slope.mode==='man'){S.cand.slope.b=bi.value;refresh();}};}
+function buildCards(){['ctrl','cand'].forEach(g=>{$('card-'+g).innerHTML=groupCard(g);});bindCards();bindSlope();}
+function rebuildKeepFocus(){const ae=document.activeElement,k=ae&&ae.dataset&&ae.dataset.g?[ae.dataset.g,ae.dataset.r,ae.dataset.c]:null;buildCards();refresh();
+ if(k){const n=document.querySelector(`.dt input[data-g="${k[0]}"][data-r="${k[1]}"][data-c="${k[2]}"]`);if(n){n.focus();if(n.select)n.select();}}}
+function bindCards(){
+ document.querySelectorAll('[data-m]').forEach(el=>{el.addEventListener('input',()=>{const [g,k]=el.dataset.m.split('.');S[g][k]=el.value;el.title=el.value;refresh();});if(/\.(prop|thk)$/.test(el.dataset.m))el.addEventListener('change',()=>{if(el.dataset.m.startsWith('cand.'))resetSlope();setTimeout(rebuildKeepFocus,0);});});
+ document.querySelectorAll('.dt input').forEach(el=>{
+  const g=el.dataset.g,r=+el.dataset.r,c=+el.dataset.c;
+  if(el.type==='checkbox'){el.addEventListener('change',()=>{S[g].rows[r][2]=el.checked?1:0;el.closest('tr').classList.toggle('off',!el.checked);refresh();});return;}
+  el.addEventListener('focus',()=>{el.dataset.v0=String(S[g].rows[r][c]??'');});
+  el.addEventListener('input',()=>{const row=S[g].rows[r];
+   if(c===1){const v0=el.dataset.v0??'';
+    if(!isEst(row)&&v0.trim()!==''&&String(row[0]??'').trim()!==''&&Number(el.value)!==Number(v0))row[4]=v0;
+    row[1]=el.value;
+    if(isEst(row)&&!row[3]&&Number(el.value)===Number(row[4]))row[4]='';
+    el.classList.toggle('est',isEst(row));
+   }else row[c]=el.value;
+   refresh();});
+  if(c===1)el.addEventListener('change',()=>{const row=S[g].rows[r];if(isEst(row)&&row[3]&&!row[2]&&!row._a){row[2]=1;row._a=1;}setTimeout(rebuildKeepFocus,0);});
+  el.addEventListener('keydown',e=>{if(e.key!=='Enter')return;const nx=document.querySelector(`.dt input[data-g="${g}"][data-r="${r+1}"][data-c="${c}"]`);
+   if(nx)nx.focus();else{addRow(g);setTimeout(()=>document.querySelector(`.dt input[data-g="${g}"][data-r="${r+1}"][data-c="${c}"]`)?.focus(),0);}});
+ });
+}
+function undoEst(g,i){const r=S[g].rows[i];if(!isEst(r))return;r[1]=Number(r[4]);r[4]='';if(r[3]){r[2]=0;r._a=0;}buildCards();refresh();}
+function addRow(g){S[g].rows.push(['','',1]);buildCards();refresh();}
+function delRow(g,i){S[g].rows.splice(i,1);if(!S[g].rows.length)S[g].rows.push(['','',1]);buildCards();refresh();}
+function clearRows(g){S[g].rows=[['','',1],['','',1],['','',1],['','',1]];S[g].src='';buildCards();refresh();}
+function refresh(){
+ LAST=compute();const R=LAST,d=R.set.dec,ok=R.rti!==undefined;
+ ['ctrl','cand'].forEach(g=>S[g].rows.forEach((r,i)=>[0,1].forEach(c=>{const el=document.querySelector(`.dt input[data-g="${g}"][data-r="${i}"][data-c="${c}"]`);if(el)el.classList.toggle('bad',!!(r.bad&&r.bad[c]));})));
+ $('card-ctrl').classList.toggle('dim',R.nc);$('card-ctrl').title=R.nc?t('ctrlOff'):'';
+ $('k_rtiL').textContent=R.set.mode==='nc20'?t('tiAsg'):t('asgL');$('k_tag').innerHTML=ptag('cand',true);
+ $('k_rti').textContent=ok?fmt(R.rti,d)+' °C':'—';
+ $('k_asg').textContent=ok&&isFinite(R.asg)?R.asg+' °C':'—';
+ {const g=$('k_gap');if(ok&&isFinite(R.asg)){g.textContent=(R.gap<2?'⚠ ':'')+'+'+R.gap.toFixed(1)+' °C';g.title=t(R.gap<2?'gapR':'gap',{g:R.gap.toFixed(1)});g.classList.toggle('risk',R.gap<2);}else g.textContent='';}
+ $('k_ci').innerHTML=ok&&isFinite(R.ciLo)?`${Math.round(R.set.conf*100)}% CI <b>${fmt(R.ciLo,d)} – ${fmt(R.ciHi,d)} °C</b><span class="qm" title="${esc(t('ciTip'))}">i</span>`:'';
+ $('k_t').textContent=ok?fmtH(R.tA)+' h':'—';
+ $('k_t2').textContent=ok?ruleTxt(R):'';
+ $('k_d').textContent=ok&&!R.nc?((R.rti-R.rtiC>=0?'+':'')+fmt(R.rti-R.rtiC,d)+' °C'):'—';
+ $('k_d2').textContent=R.nc?t('noCtrl'):t('ctrlRti',{v:S.ctrl.rti})+` (${S.ctrl.prop} · ${S.ctrl.thk} mm)`;
+ {const bi=$('slpB'),ea=$('slpEa');if(bi&&S.cand.slope.mode!=='man')bi.value=R.Fk?R.Fk.b.toFixed(1):'';if(ea)ea.textContent=R.Fk?`Ea ${(R.Fk.b*RGAS/1000).toFixed(1)} kJ/mol`:'—';}
+ const F=R.nc?[R.Fk]:[R.Fc,R.Fk];
+ let h=`<thead><tr><th>${t('param')}</th>${R.nc?'':`<th style="color:var(--ctrl)">${t('ctrl')}</th>`}<th style="color:var(--cand)">${t('cand')}</th></tr></thead><tbody>`;
+ const row=(lbl,fn)=>`<tr><td>${lbl}</td>${F.map(f=>`<td>${f?fn(f):'—'}</td>`).join('')}</tr>`;
+ h+=row(t('n'),f=>`${f.n} / ${f.levels}`);
+ h+=row(t('slope'),f=>fmt(f.b,1)+(f.fixed?`<span class="pm" style="color:#9a6b00">${esc(f.src)}</span>`:isFinite(f.seB)?`<span class="pm">± ${fmt(f.seB,1)}</span>`:''));
+ h+=row(t('inter'),f=>fmt(f.a,4));
+ h+=row(t('r2'),f=>`<b style="color:${f.r2<R.set.r2?'var(--warn)':'inherit'}">${fmt(f.r2,4)}</b>`);
+ h+=row(t('ea'),f=>fmt(f.Ea,1));
+ R.set.f50.forEach(hh=>{h+=row(t('tempAt',{h:fmtH(hh)}),f=>fmt(f.temp(hh),d));});
+ $('resTable').innerHTML=h+'</tbody>';
+ const m=[...R.errs.map(x=>['e',x]),...R.warns.map(x=>['w',x]),...R.infos.map(x=>['i',x])];
+ if(!m.length)m.push(['o',t('oOk')]);
+ const li=([c,x])=>`<li class="${c}">${esc(x)}</li>`,TOP=2,rest=m.slice(TOP),open=UI.msgOpen&&rest.length;
+ $('msgs').innerHTML=m.slice(0,TOP).map(li).join('');
+ $('msgMore').innerHTML=rest.map(li).join('');$('msgMore').style.display=open?'':'none';
+ const cnt=k=>m.filter(x=>x[0]===k).length;
+ $('mbar').innerHTML=rest.length?(['e','w','i'].map(k=>cnt(k)?`<span class="badge ${k}">${k==='e'?'✕':k==='w'?'!':'i'} ${cnt(k)}</span>`:'').join('')+`<button class="lnk" onclick="UI.msgOpen=!UI.msgOpen;refresh()">${open?t('less'):t('more',{n:rest.length})}</button>`):'';
+ drawChart($('chart'),R);
+ renderFormula();
+}
+function drawChart(svg,R){
+ const W=760,H=470,ml=70,mr=56,mt=16,mb=60,pw=W-ml-mr,ph=H-mt-mb,dec=R.set.dec;
+ const showC=$('o_ctrl').checked&&!R.nc,showCI=$('o_ci').checked,showF=$('o_f50').checked,axis=R.set.axis,ok=R.rti!==undefined;
+ const fits=[showC&&R.Fc?{F:R.Fc,c:'#1f77b4',g:'ctrl'}:null,R.Fk?{F:R.Fk,c:'#2ca02c',g:'cand'}:null].filter(Boolean);
+ if(!fits.length){svg.innerHTML=`<rect width="${W}" height="${H}" fill="#f9fbfd" rx="8"/><text x="${W/2}" y="${H/2}" text-anchor="middle" fill="#6b7785" font-size="14">${esc(t('noData'))}</text>`;return;}
+ const Ts=[],hs=[];
+ fits.forEach(o=>[...o.F.pts,...(EXC[o.g]||[])].forEach(p=>{Ts.push(p.T);hs.push(p.h);}));
+ if(ok){Ts.push(R.rti);hs.push(R.tA);if(showC){Ts.push(R.rtiC);hs.push(R.CT);}}
+ const f50=showF?R.set.f50.filter(x=>!(ok&&Math.abs(Math.log(x/R.tA))<0.01)):[];
+ f50.forEach(x=>hs.push(x));
+ const Tlo=Math.floor((Math.min(...Ts)-5)/10)*10,Thi=Math.ceil((Math.max(...Ts)+5)/10)*10;
+ let ylo=Math.floor(Math.log10(Math.min(...hs))),yhi=Math.ceil(Math.log10(Math.max(...hs)));if(yhi===ylo)yhi++;
+ const u=T=>-1000/(T+K0),u0=u(Tlo),u1=u(Thi);
+ const X=T=>ml+(u(T)-u0)/(u1-u0)*pw;
+ const Y=h=>Math.max(mt-400,Math.min(mt+ph+400,mt+ph-(Math.log10(h)-ylo)/(yhi-ylo)*ph));
+ let s=`<rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/><g font-family="Segoe UI,Arial,sans-serif" font-size="11" fill="#555">`;
+ for(let e=ylo;e<=yhi;e++){for(let k=1;k<10;k++){const v=k*10**e;if(Math.log10(v)>yhi+1e-9)break;const y=Y(v);s+=`<line x1="${ml}" x2="${ml+pw}" y1="${y}" y2="${y}" stroke="${k===1?'#d5dbe3':'#f0f2f5'}"/>`;}
+  s+=`<text x="${ml-8}" y="${Y(10**e)+4}" text-anchor="end">${(10**e).toLocaleString('en-US')}</text>`;}
+ if(axis==='T'){const st=(Thi-Tlo)>120?20:10;for(let T=Math.ceil(Tlo/st)*st;T<=Thi;T+=st){const x=X(T);
+   s+=`<line x1="${x}" x2="${x}" y1="${mt}" y2="${mt+ph}" stroke="#eef1f5"/><text x="${x}" y="${mt+ph+15}" text-anchor="middle">${T}</text><text x="${x}" y="${mt+ph+28}" text-anchor="middle" fill="#a0a9b4" font-size="9.5">${(1000/(T+K0)).toFixed(3)}</text>`;}}
+ else{const a=1000/(Thi+K0),b=1000/(Tlo+K0),st=(b-a)>0.6?0.1:0.05;for(let v=Math.ceil(a/st-1e-9)*st;v<=b+1e-9;v+=st){const T=1000/v-K0,x=X(T);
+   s+=`<line x1="${x}" x2="${x}" y1="${mt}" y2="${mt+ph}" stroke="#eef1f5"/><text x="${x}" y="${mt+ph+15}" text-anchor="middle">${v.toFixed(2)}</text><text x="${x}" y="${mt+ph+28}" text-anchor="middle" fill="#a0a9b4" font-size="9.5">${T.toFixed(0)} °C</text>`;}}
+ s+=`<rect x="${ml}" y="${mt}" width="${pw}" height="${ph}" fill="none" stroke="#9aa5b1"/>`;
+ s+=`<text x="${ml+pw/2}" y="${H-10}" text-anchor="middle" font-size="12" fill="#333">${axis==='T'?'Temperature (°C)  ·  reciprocal scale, 1000/T (K⁻¹) in grey':'1000/T (K⁻¹)  ·  °C in grey'}</text>`;
+ s+=`<text transform="translate(18 ${mt+ph/2}) rotate(-90)" text-anchor="middle" font-size="12" fill="#333">Time to end-of-life (h, log scale)</text>`;
+ s+=`<defs><clipPath id="cp"><rect x="${ml}" y="${mt}" width="${pw}" height="${ph}"/></clipPath></defs><g clip-path="url(#cp)">`;
+ const tc=R.Fk&&R.Fk.df>=1?tq(1-(1-R.set.conf)/2,R.Fk.df):null;
+ fits.forEach(o=>{const F=o.F;let up='',dn='';
+  if(showCI&&tc&&o.g==='cand'){for(let i=0;i<=60;i++){const uu=u0+(u1-u0)*i/60,T=-1000/uu-K0,lt=F.lnt(T),bd=F.band(T,tc),x=X(T);up+=(i?'L':'M')+x+','+Y(Math.exp(lt+bd));dn=`L${x},${Y(Math.exp(lt-bd))}`+dn;}
+   s+=`<path d="${up}${dn}Z" fill="${o.c}" opacity=".12"/>`;}
+  s+=`<line x1="${X(Tlo)}" y1="${Y(F.life(Tlo))}" x2="${X(Thi)}" y2="${Y(F.life(Thi))}" stroke="${o.c}" stroke-width="2" ${F.fixed?'stroke-dasharray="8 4"':''}/>`;
+ });
+ let labels='';
+ f50.forEach(x=>{const y=Y(x);s+=`<line x1="${ml}" x2="${ml+pw}" y1="${y}" y2="${y}" stroke="#999" stroke-dasharray="2 4"/>`;labels+=`<text x="${ml+pw+4}" y="${y+4}" fill="#888" font-size="10">${x>=1000?(x/1000)+'k':x} h</text>`;});
+ if(ok){
+  const yA=Y(R.tA),same=!R.nc&&Math.abs(Math.log10(R.CT/R.tA))<0.004;
+  if(showC){const y=Y(R.CT);
+   if(!same){s+=`<line x1="${ml}" x2="${ml+pw}" y1="${y}" y2="${y}" stroke="#c62828" stroke-dasharray="6 4"/>`;
+    const near=Math.abs(y-yA)<18;labels+=`<text x="${near?ml+6:ml+pw-6}" y="${near?(y<yA?y-5:y+14):y+14}" text-anchor="${near?'start':'end'}" fill="#c62828" font-weight="600">CT = ${fmtH(R.CT)} h</text>`;}
+   const x=X(R.rtiC);s+=`<line x1="${x}" x2="${x}" y1="${y}" y2="${mt+ph}" stroke="#1f77b4" stroke-dasharray="4 3"/><circle cx="${x}" cy="${y}" r="5" fill="#fff" stroke="#1f77b4" stroke-width="2"/>`;}
+  s+=`<line x1="${ml}" x2="${ml+pw}" y1="${yA}" y2="${yA}" stroke="#7b1fa2" stroke-width="1.6" stroke-dasharray="10 3 2 3"/>`;
+  const tTxt=(same&&showC?`CT = t = ${fmtH(R.tA)} h`:`t = ${fmtH(R.tA)} h`)+` (UL 746B ${R.nc?'19.15':'Table 19.1'})`;
+  labels+=`<text x="${ml+pw-6}" y="${yA<mt+16?yA+14:yA-5}" text-anchor="end" fill="#7b1fa2" font-weight="600">${tTxt}</text>`;
+  const xk=X(R.rti);s+=`<line x1="${xk}" x2="${xk}" y1="${yA}" y2="${mt+ph}" stroke="#2ca02c" stroke-dasharray="4 3"/><circle cx="${xk}" cy="${yA}" r="5" fill="#fff" stroke="#2ca02c" stroke-width="2"/>`;
+  const kTxt=`${R.set.mode==='nc20'?'TI':'RTI'} cand ${fmt(R.rti,dec)} °C → ${R.asg} °C (${S.cand.prop} ${S.cand.thk} mm)`;
+  if(showC){const xc=X(R.rtiC),cTxt=`RTI ctrl ${fmt(R.rtiC,dec)} °C (${S.ctrl.thk} mm)`,cl=xc<=xk,tw=q=>q.length*6.3;
+   const place=(x,txt,wantLeft)=>{let left=wantLeft;if(left&&x-5-tw(txt)<ml)left=false;if(!left&&x+5+tw(txt)>ml+pw)left=true;return [left?x-5:x+5,left?'end':'start'];};
+   const [cx,ca]=place(xc,cTxt,cl),[kx,ka]=place(xk,kTxt,!cl);
+   labels+=`<text x="${cx}" y="${mt+ph-24}" text-anchor="${ca}" fill="#1f77b4" font-weight="600">${cTxt}</text>`;
+   labels+=`<text x="${kx}" y="${mt+ph-8}" text-anchor="${ka}" fill="#2ca02c" font-weight="600">${kTxt}</text>`;}
+  else labels+=`<text x="${xk+5}" y="${mt+ph-8}" fill="#2ca02c" font-weight="600">${kTxt}</text>`;
+ }
+ const nm=g=>{const v=S[g].name||(g==='ctrl'?'Control':'Candidate');return v.length>40?v.slice(0,39)+'…':v;};
+ const tip=(o,p,st)=>`<title>${esc(nm(o.g))}\n${p.T} °C · ${fmtH(p.h)} h${p.cen?' (censored)':''}${p.est?' (ESTIMATE)':''} · ${st}\n${t('tipPt')}</title>`;
+ let anyCen=false,anyExc=false,anyEst=false;
+ fits.forEach(o=>o.F.pts.forEach(p=>{const x=X(p.T),y=Y(p.h);if(p.est){anyEst=true;s+=`<circle cx="${x}" cy="${y}" r="8.5" fill="none" stroke="#d32f2f" stroke-width="2" stroke-dasharray="3 2" pointer-events="none"/>`;}
+  s+=`<circle data-g="${o.g}" data-i="${p.i}" cx="${x}" cy="${y}" r="5" fill="${o.c}" stroke="#fff" stroke-width="1.2">${tip(o,p,'used')}</circle>`;}));
+ fits.forEach(o=>(EXC[o.g]||[]).forEach(p=>{const x=X(p.T),y=Y(p.h);
+  if(p.cen){anyCen=true;s+=`<g data-g="${o.g}" data-i="${p.i}">${tip(o,p,'excluded')}<rect x="${x-7}" y="${y-18}" width="14" height="24" fill="transparent"/><path d="M${x-5},${y+3}L${x+5},${y+3}L${x},${y-6}Z" fill="#fff" stroke="${o.c}" stroke-width="1.5"/><line x1="${x}" x2="${x}" y1="${y-6}" y2="${y-16}" stroke="${o.c}"/><path d="M${x-3},${y-13}L${x},${y-17}L${x+3},${y-13}" fill="none" stroke="${o.c}"/></g>`;}
+  else{anyExc=true;s+=`<circle data-g="${o.g}" data-i="${p.i}" cx="${x}" cy="${y}" r="5" fill="#fff" stroke="${o.c}" stroke-width="1.5">${tip(o,p,'excluded')}</circle>`;}}));
+ s+=`</g>`+labels;
+ const items=fits.map(o=>({k:'line',c:o.c,txt:nm(o.g)+(o.F.fixed?` (${t('fixedLg')} b=${o.F.b.toFixed(0)})`:'')}));
+ if(anyCen)items.push({k:'cen',c:'#555',txt:'censored – EoL not reached'});
+ if(anyExc)items.push({k:'exc',c:'#555',txt:'excluded from fit'});
+ if(anyEst)items.push({k:'est',c:'#d32f2f',txt:'estimated EoL (not measured)'});
+ const lh=16,bw=Math.min(pw*0.6,Math.max(...items.map(i=>i.txt.length))*5.9+38),bh=items.length*lh+8,bx=ml+8,by=mt+ph-bh-8-(ok?32:0);
+ s+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" fill="#fff" fill-opacity=".9" stroke="#dde3eb" rx="4"/>`;
+ items.forEach((it,i)=>{const y=by+12+i*lh,x=bx+8;
+  if(it.k==='line')s+=`<line x1="${x}" x2="${x+20}" y1="${y}" y2="${y}" stroke="${it.c}" stroke-width="2"/><circle cx="${x+10}" cy="${y}" r="3.5" fill="${it.c}"/>`;
+  else if(it.k==='cen')s+=`<path d="M${x+5},${y+4}L${x+15},${y+4}L${x+10},${y-4}Z" fill="#fff" stroke="#555"/>`;
+  else if(it.k==='exc')s+=`<circle cx="${x+10}" cy="${y}" r="4" fill="#fff" stroke="#555" stroke-width="1.4"/>`;
+  else s+=`<circle cx="${x+10}" cy="${y}" r="5.5" fill="none" stroke="#d32f2f" stroke-width="1.8" stroke-dasharray="3 2"/>`;
+  s+=`<text x="${x+26}" y="${y+4}" fill="${it.k==='est'?'#d32f2f':'#333'}">${esc(it.txt)}</text>`;});
+ s+='</g>';svg.innerHTML=s;
+}
+function renderFormula(){
+ const R=LAST,zh=LANG==='zh',L=(c,e)=>zh?c:e,ok=R&&R.rti!==undefined;
+ const sec=(id,no,title,ref,body,cls='')=>`<section id="fm-${id}" class="${cls}"><h3><span class="no">${no}</span>${title}${ref?`<span class="ref">${ref}</span>`:''}</h3>${body}</section>`;
+ const nav=[['flow',L('计算流程','Workflow')],['t191',L('判定时间 t','Assignment time t')],['c231',L('温度档位','Classes')],['thk',L('多厚度 / 多性能','Thickness & property')],['data',L('数据有效性','Data validity')],['live',L('当前计算','Current calc')]];
+ let h=`<nav>${nav.map(([i,n])=>`<a href="#fm-${i}">${n}</a>`).join('')}</nav><div class="grid">`;
+ // 1 workflow
+ h+=sec('flow',1,L('Arrhenius 拟合与 RTI 计算','Arrhenius fit & RTI calculation'),'UL 746B §19',
+ `<ol>
+ <li>${L('每个老化温度确定失效时间 <i>t</i>（性能保持率降到','At each aging temperature find time-to-EoL <i>t</i> (property retention falls to')} <b>${esc(R?R.set.crit:'50%')}</b>${L('）。','）.')}</li>
+ <li>${L('对 ln <i>t</i> 与 1/<i>T</i> 做最小二乘直线拟合（<i>T</i> 为开尔文温度）：','Least-squares line of ln <i>t</i> vs 1/<i>T</i> (<i>T</i> in K):')}
+  <div class="eq">ln <i>t</i> = <i>a</i> + <i>b</i> / <i>T</i> &nbsp;&nbsp;&nbsp; <i>E</i><sub>a</sub> = <i>b</i> · <i>R</i>, &nbsp;<i>R</i> = 8.314 J·mol⁻¹·K⁻¹</div></li>
+ <li>${L('用对照材料已知 RTI 求关联时间 CT：','Correlation time CT from the control’s known RTI:')}
+  <div class="eq">CT = exp( <i>a</i><sub>ctrl</sub> + <i>b</i><sub>ctrl</sub> / (RTI<sub>ctrl</sub> + 273.15) )</div></li>
+ <li>${L('按 Table 19.1 由 CT 得到判定时间 <i>t</i>（见 ②），代入候选材料直线：','Get assignment time <i>t</i> from CT per Table 19.1 (see ②) and solve the candidate line:')}
+  <div class="eq">RTI<sub>meas</sub> = <i>b</i><sub>cand</sub> / ( ln <i>t</i> − <i>a</i><sub>cand</sub> ) − 273.15</div></li>
+ <li>${L('按 23.1 向下取档得到最终判定 RTI（见 ③）。','Round down to a standard class per 23.1 → assigned RTI (see ③).')}</li>
+ </ol>
+ <div class="note">${L('<b>固定斜率（低厚度 2 点数据）：</b>斜率取手动值 / 对照斜率 / 同材料厚件斜率，截距 <i>a</i> = mean(ln <i>t</i> − <i>b</i>/<i>T</i>)，参考 §20.2.11“相同斜率、平移截距”。<br><b>置信区间：</b>候选拟合线置信带（Student <i>t</i>）与 ln <i>t</i> 的交点，仅含候选组不确定度。','<b>Fixed slope (2-point thin data):</b> manual / control / thick-section slope, intercept <i>a</i> = mean(ln <i>t</i> − <i>b</i>/<i>T</i>), cf. §20.2.11 “same slope, shifted intercept”.<br><b>CI:</b> intersection of the candidate confidence band (Student <i>t</i>) with ln <i>t</i>; candidate uncertainty only.')}</div>`);
+ // 2 Table 19.1
+ h+=sec('t191',2,L('判定时间 t','Assignment time t'),'Table 19.1 · §19.15',
+ `<table><thead><tr><th>${L('条件','Condition')}</th><th>${L('判定时间 t','Assignment time t')}</th></tr></thead><tbody>
+ <tr><td>CT &lt; 5 000 h</td><td class="n">5 000 h</td></tr>
+ <tr><td>5 000 ≤ CT ≤ 60 000 h</td><td class="n">t = CT</td></tr>
+ <tr><td>CT &gt; 60 000 h</td><td class="n">60 000 h</td></tr>
+ <tr><td>${L('无对照（仅候选）→ RTI','No control (candidate only) → RTI')}</td><td class="n">60 000 h</td></tr>
+ <tr><td>${L('无对照 → TI（需 IEC 60216-3 线性验证）','No control → TI (IEC 60216-3 linearity)')}</td><td class="n">20 000 h</td></tr></tbody></table>
+ <div class="note">${L('截断后 RTI 仍取在候选直线与 ln <i>t</i> 的交点；工具在提示区同时给出“若直接用 CT”的温度供对比。','RTI is read where the candidate line meets ln <i>t</i>; the un-bounded value at CT is shown for comparison.')}</div>`);
+ // 3 classes
+ h+=sec('c231',3,L('温度档位（最终判定）','Temperature classes (final assignment)'),'§23.1',
+ `<p>${L('计算值<b>一律向下</b>取到下列标准档位：','Calculated values are <b>always rounded down</b> to:')}</p>
+ <table><thead><tr><th>${L('计算值范围','Range')}</th><th>${L('档位','Classes')}</th></tr></thead><tbody>
+ <tr><td>≤ 130 °C</td><td class="n">${L('每 5 °C','every 5 °C')} … 120, 125, 130</td></tr>
+ <tr><td>130 – 180 °C</td><td class="n">130, 140, 150, <span class="hl">155</span>, 160, 170, 180</td></tr>
+ <tr><td>&gt; 180 °C</td><td class="n">200, 220, 240 … <span style="font-weight:400;color:#6b7785">(${L('每 20 °C','every 20 °C')})</span></td></tr>
+ <tr><td>${L('烘箱温差 ≤ 3.0 °C 时','Oven differential ≤ 3.0 °C')}</td><td class="n">${L('另可用','also')} 190, 210</td></tr></tbody></table>
+ <div class="note">${L('例：92.9 → 90；154.9 → 150；155.2 → 155；179.9 → 170；199 → 180（烘箱 ≤3 °C 时 190）。计算值高出档位 &lt; 2 °C 时工具标记“边界风险”。','e.g. 92.9 → 90; 154.9 → 150; 155.2 → 155; 179.9 → 170; 199 → 180 (190 if oven ≤3 °C). Values &lt; 2 °C above a class are flagged as boundary risk.')}</div>`);
+ // 4 thickness / property
+ h+=sec('thk',4,L('不同厚度 · 不同性能的 RTI','RTI by thickness and property'),'§6.1 · §10.1.4 · §20.2.2A · Table 10.2',
+ `<table><thead><tr><th style="width:24%">${L('性能','Property')}</th><th>${L('判定方法','How it is assigned')}</th></tr></thead><tbody>
+ <tr><td><b>${L('非冲击力学','Mech. w/o impact')}</b><br><span style="color:#6b7785;font-size:12px">TS / TStr / FS</span></td><td><span class="tag tg-a">a</span> ${L('<b>每个厚度单独实测</b>：该厚度老化 → Arrhenius 拟合 → 对照 CT → Table 19.1 → 23.1 取档。低厚度常只做 2 个中间温度，可借用厚件斜率。','<b>Measured at each thickness</b>: aging → Arrhenius → control CT → Table 19.1 → 23.1. Thin sections often aged at 2 mid temperatures; thick-section slope may be borrowed.')}</td></tr>
+ <tr><td><b>${L('冲击力学','Mech. with impact')}</b><br><span style="color:#6b7785;font-size:12px">Izod / Charpy / ChN / IzU</span></td><td><span class="tag tg-b">b</span> ${L('3–4 mm 实测；更薄厚度按<b>偏移原则</b>：','Measured at 3–4 mm; thinner sections by the <b>offset principle</b>:')}
+  <div class="eq">Imp<sub>d</sub> = Imp<sub>3/4</sub> − max(0, Str<sub>3</sub> − Str<sub>d</sub>)</div>${L('偏移量用<b>实测值</b>（未取档）计算，最后再按 23.1 取档；低于 0.75 mm 也适用（需按 Table 10.2 测试）。','Use <b>measured</b> (un-rounded) values, then round per 23.1; also valid below 0.75 mm if tested per Table 10.2.')}</td></tr>
+ <tr><td><b>${L('电性能','Electrical')}</b><br><span style="color:#6b7785;font-size:12px">${L('介电强度','Dielectric strength')}</span></td><td><span class="tag tg-a">a</span> ${L('D4 四点程序：必须实测（通常 0.75 mm / 最小厚度），不可豁免。<br><span class="tag tg-c">D1/D2</span> 简化程序：3 mm 力学结果可代表其他性能与厚度；若非冲击 RTI 下降，未测电 RTI <b>同步扣减相同幅度</b>。','D4 program: must be tested (usually 0.75 mm / min. thickness).<br><span class="tag tg-c">D1/D2</span>: 3 mm mechanical results represent other properties/thicknesses; if the non-impact RTI drops, the untested electrical RTI is <b>lowered by the same amount</b>.')}</td></tr>
+ </tbody></table>
+ <p style="margin-top:10px"><b>${L('标准示例（Table 10.2）','Standard example (Table 10.2)')}</b></p>
+ <table><thead><tr><th>${L('厚度','Thickness')}</th><th>Str ${L('实测','meas.')}</th><th>${L('偏移量','Offset')}</th><th>Imp ${L('实测','meas.')}</th><th>${L('最终','Final')} Elec / Imp / Str</th></tr></thead><tbody>
+ <tr><td>3.0 mm</td><td class="n">245</td><td class="n">0</td><td class="n">183 <span class="tag tg-a">a</span></td><td class="n">240 / 180 / 240</td></tr>
+ <tr><td>1.5 mm</td><td class="n">233</td><td class="n">12</td><td class="n">171 <span class="tag tg-b">b</span></td><td class="n">240 / 170 / 220</td></tr>
+ <tr><td>0.75 mm</td><td class="n">231</td><td class="n">14</td><td class="n">169 <span class="tag tg-b">b</span></td><td class="n">240 / 160 / 220</td></tr></tbody></table>
+ <div class="warn">${L('⚠ 标准仅对 TI（§22D.1.2）规定“中间厚度取较低值”；RTI 中间厚度、低厚度 2 点数据的斜率处理需与 UL 确认。对照材料尽量同类、同厚度（§14.2）。','⚠ “Lower value for intermediate thicknesses” is stated only for TI (§22D.1.2); intermediate-thickness RTI and slope handling for 2-point thin data should be confirmed with UL. Control should be same generic type and thickness (§14.2).')}</div>`);
+ // 5 data validity
+ h+=sec('data',5,L('数据有效性要求','Data validity'),'§13 · Table 13.2',
+ `<table><tbody>
+ <tr><td>${L('烘箱温度','Oven temperatures')}</td><td>${L('≥ 4 个，相邻间隔 ≥ 10 °C','≥ 4, spaced ≥ 10 °C apart')}</td></tr>
+ <tr><td>${L('最高温 T1','Highest T1')}</td><td>${L('终点 ≥ 500 h','EoL ≥ 500 h')}</td></tr>
+ <tr><td>${L('最低温 T4','Lowest T4')}</td><td>${L('终点 ≥ 5 000 h；最终 RTI 不宜高于 T4','EoL ≥ 5 000 h; assigned RTI should not exceed T4')}</td></tr>
+ <tr><td>${L('终点不足','Insufficient EoL')}</td><td>${L('10 000 h 时 ≤ 1 个终点：按耐热材料路线（E/R = 4200）处理','≤ 1 EoL at 10 000 h: heat-resistant route (E/R = 4200)')}</td></tr>
+ <tr><td>${L('删失点','Censored points')}</td><td>${L('“&gt;6020 (63%)” 未到终点，默认不参与拟合；人工预估值以红色标记','“&gt;6020 (63%)” = EoL not reached, excluded by default; manual estimates shown in red')}</td></tr></tbody></table>`);
+ // 6 live
+ let live='';
+ if(ok){const T=R.set.mode==='nc20'?'TI':'RTI';
+  live=`<dl class="kv">
+  ${R.nc?`<dt>${L('对照','Control')}</dt><dd>${L('无对照模式','no control')}</dd>`:`<dt>${L('对照直线','Control line')}</dt><dd><i>b</i> = ${R.Fc.b.toFixed(1)} K, <i>a</i> = ${R.Fc.a.toFixed(4)} &nbsp;(R² ${R.Fc.r2.toFixed(4)}) · ${esc(S.ctrl.prop)} ${esc(S.ctrl.thk)} mm</dd>
+  <dt>CT</dt><dd>${fmtH(R.CT)} h &nbsp;@ RTI<sub>ctrl</sub> ${esc(R.rtiC)} °C</dd>`}
+  <dt>${L('判定时间 t','Assignment t')}</dt><dd>${fmtH(R.tA)} h &nbsp;<span style="font-weight:400;color:#6b7785">${esc(ruleTxt(R))}</span></dd>
+  <dt>${L('候选直线','Candidate line')}</dt><dd><i>b</i> = ${R.Fk.b.toFixed(1)} K${R.Fk.fixed?` <span class="hl">${esc(R.Fk.src)}</span>`:''}, <i>a</i> = ${R.Fk.a.toFixed(4)} · ${esc(S.cand.prop)} ${esc(S.cand.thk)} mm</dd>
+  <dt>${T} ${L('计算值','calculated')}</dt><dd>${R.rti.toFixed(2)} °C${isFinite(R.ciLo)?` &nbsp;<span style="font-weight:400;color:#6b7785">(${Math.round(R.set.conf*100)}% CI ${R.ciLo.toFixed(1)} – ${R.ciHi.toFixed(1)} °C)</span>`:''}</dd>
+  <dt>${T} ${L('判定值','assigned')}</dt><dd style="font-size:16px;color:#004A96">${R.asg} °C <span style="font-weight:400;font-size:12px;color:#6b7785">(23.1${R.set.oven?L('，烘箱 ≤3 °C',', oven ≤3 °C'):''}; +${R.gap.toFixed(1)} °C)</span></dd></dl>`;}
+ else live=`<p style="color:#6b7785">${L('暂无有效计算结果','No valid result')}</p>`;
+ h+=sec('live',6,L('当前计算','Current calculation'),'',live,'live');
+ h+=`</div><div class="disc">${L('注：结果用于研发评估；正式 RTI 以 UL 746B 现行版本及 UL 认证程序为准。','Note: for R&D evaluation; official RTI per current UL 746B and UL certification procedures.')}</div>`;
+ $('formulaBox').innerHTML=h;
+}
+function openImp(){$('impOv').classList.add('show');if(IMP)impRender();}
+function closeImp(){$('impOv').classList.remove('show');}
+async function unzip(buf){
+ const dv=new DataView(buf),u8=new Uint8Array(buf);let e=buf.byteLength-22;while(e>=0&&dv.getUint32(e,true)!==0x06054b50)e--;if(e<0)throw new Error('not a zip');
+ const n=dv.getUint16(e+10,true);let p=dv.getUint32(e+16,true);const out={},dec=new TextDecoder();
+ for(let i=0;i<n;i++){const m=dv.getUint16(p+10,true),cs=dv.getUint32(p+20,true),fl=dv.getUint16(p+28,true),xl=dv.getUint16(p+30,true),cl=dv.getUint16(p+32,true),lo=dv.getUint32(p+42,true);
+  const name=dec.decode(u8.subarray(p+46,p+46+fl));p+=46+fl+xl+cl;
+  out[name]=async()=>{const ln=dv.getUint16(lo+26,true),lx=dv.getUint16(lo+28,true),st=lo+30+ln+lx,raw=u8.subarray(st,st+cs);
+   if(m===0)return dec.decode(raw);
+   if(typeof DecompressionStream==='undefined')throw new Error('Browser too old: please use Edge/Chrome ≥ 103');
+   const ds=new Blob([raw]).stream().pipeThrough(new DecompressionStream('deflate-raw'));return await new Response(ds).text();};}
+ return out;
+}
+const colIdx=r=>{let c=0;for(const ch of r.replace(/\d+/g,''))c=c*26+ch.charCodeAt(0)-64;return c-1;};
+async function readXlsx(buf){
+ const z=await unzip(buf),P=new DOMParser(),Xm=s=>P.parseFromString(s,'application/xml');
+ const ss=z['xl/sharedStrings.xml']?[...Xm(await z['xl/sharedStrings.xml']()).getElementsByTagName('si')].map(si=>[...si.getElementsByTagName('t')].map(x=>x.textContent).join('')):[];
+ const wb=Xm(await z['xl/workbook.xml']()),rel=Xm(await z['xl/_rels/workbook.xml.rels']());
+ const rmap={};[...rel.getElementsByTagName('Relationship')].forEach(r=>rmap[r.getAttribute('Id')]=r.getAttribute('Target'));
+ const sheets={};
+ for(const sh of wb.getElementsByTagName('sheet')){
+  const id=sh.getAttribute('r:id')||sh.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships','id');
+  let tg=rmap[id];if(!tg)continue;tg=tg.startsWith('/')?tg.slice(1):'xl/'+tg.replace(/^\.\//,'');if(!z[tg])continue;
+  const doc=Xm(await z[tg]()),rows=[];
+  for(const r of doc.getElementsByTagName('row')){const ri=+r.getAttribute('r')-1,arr=[];
+   for(const c of r.getElementsByTagName('c')){const tp=c.getAttribute('t'),v=c.getElementsByTagName('v')[0];let val=null;
+    if(tp==='s'&&v)val=ss[+v.textContent];else if(tp==='inlineStr')val=[...c.getElementsByTagName('t')].map(x=>x.textContent).join('');else if(v)val=v.textContent;
+    if(val!==null)arr[colIdx(c.getAttribute('r'))]=val;}
+   rows[ri]=arr;}
+  sheets[sh.getAttribute('name')]=rows;}
+ return sheets;
+}
+function readText(txt){const d=txt.includes('\t')?'\t':(txt.split(';').length>txt.split(',').length?';':',');
+ return {Sheet1:txt.split(/\r?\n/).map(l=>{const o=[];let cur='',q=false;for(const ch of l){if(ch==='"')q=!q;else if(ch===d&&!q){o.push(cur);cur='';}else cur+=ch;}o.push(cur);return o;})};}
+function parseCell(v){
+ if(v==null)return null;const s=String(v).trim();if(!s||/^[-–—\/]$/.test(s)||/^n\.?a\.?$/i.test(s))return null;
+ const m=s.match(/^([><≥]=?)\s*([\d.,]+)\s*(?:\(([^)]*)\))?/);
+ if(m)return {h:Number(m[2].replace(',','.')),cen:true,raw:s};
+ const n=Number(s.replace(',','.'));return isFinite(n)&&n>0?{h:n,cen:false,raw:s}:{h:NaN,bad:true,raw:s};
+}
+function buildImp(rows){
+ let hr=-1,cP=0;for(let i=0;i<Math.min(rows.length,15);i++){const r=(rows[i]||[]).map(x=>String(x??'').trim().toLowerCase());
+  const k=r.findIndex((x,j)=>(x==='p'||x==='property')&&/^(d|thk|thickness)$/.test(r[j+1]||'')&&/^(t|temp|temperature)$/.test(r[j+2]||''));if(k>=0){hr=i;cP=k;break;}}
+ if(hr<0)return null;
+ const Hd=rows[hr],mats=[];for(let j=cP+3;j<Hd.length;j++)if(String(Hd[j]??'').trim())mats.push({col:j,name:String(Hd[j]).trim()});
+ const groups=[],gm={};let lastP='',lastD='';
+ for(let i=hr+1;i<rows.length;i++){const r=rows[i]||[];let P=String(r[cP]??'').trim(),d=String(r[cP+1]??'').trim();const T=Number(String(r[cP+2]??'').trim().replace(',','.'));
+  if(!P&&!d&&!String(r[cP+2]??'').trim())continue;if(!P)P=lastP;if(!d)d=lastD;lastP=P;lastD=d;
+  if(!isFinite(T)||T<=0)continue;const key=P+'|'+d;if(!gm[key]){gm[key]={key,P,d,rows:[]};groups.push(gm[key]);}
+  gm[key].rows.push({T,vals:mats.map(m=>parseCell(r[m.col]))});}
+ groups.forEach(g=>{g.rows.sort((a,b)=>b.T-a.T);g.cnt=mats.map((m,j)=>{let e=0,c=0;const ts=new Set();g.rows.forEach(r=>{const v=r.vals[j];if(v&&!v.bad){if(v.cen)c++;else{e++;ts.add(r.T);}}});return {e,c,lv:ts.size};});});
+ return {mats,groups:groups.filter(g=>g.cnt.some(c=>c.e+c.c>0))};
+}
+async function impFile(ev){
+ let f=null;if(ev instanceof Blob)f=ev;else if(ev&&ev.target&&ev.target.files){f=ev.target.files[0];const inp=ev.target;setTimeout(()=>{inp.value='';},0);}
+ if(!f)return;
+ if(!/\.(xlsx|xlsm|csv|tsv|txt)$/i.test(f.name||'')){toast(t('impBad')+': '+(f.name||''));return;}
+ try{const buf=await f.arrayBuffer();const sheets=/\.(csv|txt|tsv)$/i.test(f.name)?readText(new TextDecoder().decode(buf)):await readXlsx(buf);
+  IMP={file:f.name,sheets,sheet:null,gi:0,gic:0,c:0,k:1,clickN:0,mats:[],groups:[]};
+  const names=Object.keys(sheets),okN=names.find(n=>buildImp(sheets[n]))||names[0];
+  $('impSheet').innerHTML=names.map(n=>`<option ${n===okN?'selected':''}>${esc(n)}</option>`).join('');
+  $('sheetWrap').style.display=names.length>1?'':'none';
+  impSelectSheet(okN);openImp();}
+ catch(e){console.error(e);toast(t('impBad')+(e&&e.message?' ('+e.message+')':''));}
+}
+function impSelectSheet(n){IMP.sheet=n;const b=buildImp(IMP.sheets[n]);if(!b){IMP.mats=[];IMP.groups=[];toast(t('impNoHdr'));}else Object.assign(IMP,b);
+ IMP.gi=Math.max(0,IMP.groups.findIndex(g=>String(g.P).toLowerCase()===String(S.cand.prop).toLowerCase()&&String(g.d)===String(S.cand.thk)));IMP.gic=IMP.gi;
+ const nmL=IMP.mats.map(m=>m.name);IMP.c=nmL.indexOf(S.ctrl.name);IMP.k=nmL.indexOf(S.cand.name);if(IMP.c<0)IMP.c=0;if(IMP.k<0||IMP.k===IMP.c)IMP.k=Math.min(1,nmL.length-1);
+ $('impRti').value=S.ctrl.rti;impRender();}
+function impRender(){
+ const dz=$('drop'),has=IMP&&IMP.groups&&IMP.groups.length;dz.classList.toggle('cmp',!!has);dz.dataset.cur=has?`${IMP.file} · ${IMP.sheet}`:'';
+ if(!has){$('impBody').style.display='none';return;}$('impBody').style.display='';
+ const G=IMP.groups[IMP.gi],cS=$('impC'),kS=$('impK');
+ const Gc=IMP.groups[autoGic()];
+ $('impInfo').textContent=t('impInfo',{f:IMP.sheet,n:IMP.mats.length,g:IMP.groups.length});
+ $('impProps').innerHTML=IMP.groups.map((g,i)=>`<span class="chip ${i===IMP.gi?'on':''}" tabindex="0" onclick="IMP.gi=${i};impRender()">${esc(g.P)} · ${esc(g.d)} mm<small>${g.rows.length}T</small></span>`).join('');
+ const opt=(sel,ctrl)=>IMP.mats.map((m,j)=>{const c=G.cnt[j],dis=ctrl?ctrlLv(j)<1&&c.e+c.c===0:c.e+c.c===0;return `<option value="${j}" ${j===sel?'selected':''} ${dis?'disabled':''}>${esc(m.name)}  —  ${t('impPts',{e:c.e,c:c.c})}</option>`;}).join('');
+ cS.innerHTML=opt(IMP.c,1);kS.innerHTML=opt(IMP.k,0);
+ cS.onchange=()=>{IMP.c=+cS.value;impRender();};kS.onchange=()=>{IMP.k=+kS.value;impRender();};
+ const cls=j=>j===IMP.c?'isC':j===IMP.k?'isK':'';
+ let h=`<thead><tr><th>T (°C)</th>${IMP.mats.map((m,j)=>`<th class="mc ${cls(j)}" tabindex="0" onclick="impPick(${j})" title="${esc(m.name)}"><span class="nm">${esc(m.name)}</span>${j===IMP.c?'<span class="tag c">Control</span>':''}${j===IMP.k?'<span class="tag k">Candidate</span>':''}</th>`).join('')}</tr></thead><tbody>`;
+ G.rows.forEach(r=>{h+=`<tr><th>${r.T}</th>${r.vals.map((v,j)=>`<td class="${cls(j)} ${!v?'na':v.cen?'cen':''}">${!v?'—':esc(v.raw)}</td>`).join('')}</tr>`;});
+ h+=`<tr><th>Σ</th>${G.cnt.map((c,j)=>`<td class="${cls(j)} hint">${c.e} / ${c.c}</td>`).join('')}</tr>`;
+ {const md=$('s_mode').value,rv=$('impRti').value,rtiV=Number(rv),ep=(GG,j)=>GG.rows.filter(r=>r.vals[j]&&!r.vals[j].bad&&!r.vals[j].cen).map(r=>({T:r.T,h:r.vals[j].h}));
+  const lv=p=>new Set(p.map(x=>x.T)).size,pc=ep(Gc,IMP.c);let lnCT=NaN;
+  if(md==='ctrl'&&lv(pc)>=2&&rv!==''&&isFinite(rtiV))lnCT=fit(pc).lnt(rtiV);
+  const AA=md!=='ctrl'?assignTime(NaN,md):(isFinite(lnCT)?assignTime(Math.exp(lnCT),md):null),lnTA=AA?Math.log(AA.tA):NaN;
+  let rr='',rq='';G.cnt.forEach((c,j)=>{const p=ep(G,j);let v='—',q='—';
+   if(j===IMP.c&&md==='ctrl'){v=rtiV+` <span class="hint">ref · ${esc(Gc.d)} mm</span>`;if(lv(pc)>=2)q=fit(pc).r2.toFixed(3);}
+   else if(lv(p)>=2){const F=fit(p);q=F.r2.toFixed(3);if(isFinite(lnTA)&&F.b>0){const Rr=F.b/(lnTA-F.a)-K0;if(isFinite(Rr))v=`${ulClass(Rr,$('s_oven').checked)} <span class="hint" style="font-weight:400">(${Rr.toFixed(1)})</span>`;}}
+   rr+=`<td class="${cls(j)}"><b>${v}</b></td>`;rq+=`<td class="${cls(j)} hint">${q}</td>`;});
+  h+=`<tr class="sum"><th title="UL 746B Table 19.1 · EoL points only">${md==='nc20'?'TI':'RTI'}${AA?`<div class="hint" style="font-weight:400">t ${fmtH(AA.tA)} h</div>`:''}</th>${rr}</tr><tr class="sum2"><th>R²</th>${rq}</tr>`;}
+ const mx=$('impMx');mx.style.minWidth=(70+IMP.mats.length*120)+'px';mx.innerHTML=h+'</tbody>';
+ const okC=Gc.cnt[IMP.c],okK=G.cnt[IMP.k],okk=IMP.c!==IMP.k&&okC&&okK&&okK.lv>=2&&($('s_mode').value!=='ctrl'||okC.lv>=2);
+ const b=$('impGo');b.disabled=!okk;b.title=okk?'':(IMP.c===IMP.k?t('same'):t('impNeed'));
+}
+function impPick(j){if(IMP.clickN%2===0)IMP.c=j;else IMP.k=j;IMP.clickN++;impRender();}
+function impSwap(){if(!IMP)return;[IMP.c,IMP.k]=[IMP.k,IMP.c];impRender();}
+function impApply(quiet){
+ if(!quiet)IMP.gic=autoGic();
+ const Gk=IMP.groups[IMP.gi],Gc=IMP.groups[IMP.gic??IMP.gi],useCen=$('impUseCen').checked;
+ const mk=(G,j)=>G.rows.filter(r=>r.vals[j]&&!r.vals[j].bad).map(r=>{const v=r.vals[j];return v.cen?[r.T,v.h,useCen?1:0,v.raw]:[r.T,v.h,1];});
+ const put=(g,G,j)=>{S[g].name=IMP.mats[j].name;S[g].prop=G.P;S[g].thk=G.d;S[g].rows=mk(G,j);S[g].src=`${IMP.file} · ${IMP.sheet}`;};
+ const prevKey=S.cand.prop+'|'+S.cand.thk;
+ put('ctrl',Gc,IMP.c);put('cand',Gk,IMP.k);if(!quiet||prevKey!==Gk.P+'|'+Gk.d)resetSlope();{const sl=S.cand.slope;if(sl&&sl.mode==='thk'&&(sl.gi===IMP.gi||!IMP.groups[sl.gi]||IMP.groups[sl.gi].P!==Gk.P)){sl.mode='fit';sl.gi=-1;}}
+ if(!quiet){const rv=$('impRti').value;if(rv!=='')S.ctrl.rti=Number(rv);}
+ closeImp();buildCards();refresh();renderQbar();
+ toast(t('impDone',{p:Gk.P,dc:Gc.d,dk:Gk.d}));
+}
+function renderQbar(){
+ const q=$('qbar');if(!IMP||!IMP.groups.length||!S.cand.src){q.classList.remove('show');hdrBtn();return;}
+ const G=IMP.groups[IMP.gi],Gc=IMP.groups[IMP.gic??IMP.gi];
+ const oC=IMP.mats.map((m,j)=>`<option value="${j}" ${j===IMP.c?'selected':''} ${ctrlLv(j)<2?'disabled':''}>${esc(m.name)}</option>`).join('');
+ const oK=IMP.mats.map((m,j)=>`<option value="${j}" ${j===IMP.k?'selected':''} ${G.cnt[j].lv<2?'disabled':''}>${esc(m.name)}</option>`).join('');
+ const cnt=(GG,j)=>{const c=GG.cnt[j];return c?t('pts2',{e:c.e,c:c.c}):'';};
+ q.innerHTML=`
+  <div class="qs"><span class="ql">${t('qSrc')}</span><div class="qfile"><button class="qfbtn" title="${esc(t('qOpenT'))}" onclick="openImp()">${ICON}<span>${esc(IMP.file)}</span><small>· ${esc(IMP.sheet)}</small></button><button class="qx" title="${esc(t('qUnlinkT'))}" onclick="unlinkSrc()">✕</button></div></div>
+  <div class="qdiv"></div>
+  <div class="qs"><span class="ql">${t('qProp')}</span><select class="qsel qprop" onchange="IMP.gi=+this.value;IMP.gic=autoGic();impApply(1)">${IMP.groups.map((g,i)=>`<option value="${i}" ${i===IMP.gi?'selected':''}>${esc(g.P)} · ${esc(g.d)} mm</option>`).join('')}</select></div>
+  <div class="qdiv"></div>
+  <div class="qs qmat c"><span class="ql"><span class="qrole">● Control</span> <span class="qcnt">${esc(Gc.d)} mm · ${cnt(Gc,IMP.c)}</span></span><select class="qsel" title="${esc(IMP.mats[IMP.c].name)}" onchange="IMP.c=+this.value;IMP.gic=autoGic();impApply(1)">${oC}</select></div>
+  <button class="qswap" title="${t('swap')}" onclick="impSwap();IMP.gic=autoGic();impApply(1)">⇄</button>
+  <div class="qs qmat k"><span class="ql"><span class="qrole">● Candidate</span> <span class="qcnt">${cnt(G,IMP.k)}</span></span><select class="qsel" title="${esc(IMP.mats[IMP.k].name)}" onchange="IMP.k=+this.value;impApply(1)">${oK}</select></div>`;
+ q.classList.add('show');hdrBtn();
+}
+function hdrBtn(){const b=document.querySelector('header [data-i="impData"]');if(b)b.textContent=linked()?t('impDataL'):t('impData');}
+function unlinkSrc(){IMP=null;['ctrl','cand'].forEach(g=>S[g].src='');renderQbar();buildCards();refresh();}
+function snapshot(){return {app:'LTTA-RTI',ver:4,date:new Date().toISOString(),state:S,settings:Object.fromEntries(SET_IDS.map(i=>[i,$(i).value]))};}
+function dl(name,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1000);}
+function fname(ext){return `RTI_${(S.cand.name||'candidate').replace(/[^\w\-]+/g,'_')}_${new Date().toISOString().slice(0,10)}.${ext}`;}
+function exportJSON(){dl(fname('json'),new Blob([JSON.stringify(snapshot(),null,2)],{type:'application/json'}));toast(t('saved'));}
+function importJSON(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);S=sane(j.state);IMP=null;renderQbar();if(j.settings)for(const k in j.settings){const el=$(k);if(el)el.value=j.settings[k];}buildCards();refresh();toast(t('loaded'));}catch(err){toast('Invalid file');}};r.readAsText(f);e.target.value='';}
+function exportCSV(){
+ const R=LAST,L=[],q=v=>`"${String(v??'').replace(/"/g,'""')}"`;
+ L.push('Group,Material,Property,Thickness_mm,Temp_C,Time_h,Used,Censored_raw,Estimated,Original_measured');
+ ['ctrl','cand'].forEach(g=>S[g].rows.forEach(r=>{if(String(r[0]??'').trim()!=='')L.push([g,S[g].name,S[g].prop,S[g].thk,r[0],r[1],r[2],r[3]||'',isEst(r)?'Y':'',isEst(r)?(r[3]||r[4]):''].map(q).join(','));}));
+ L.push('','Result,Value');
+ L.push(`End-of-life criterion,${q(R.set.crit)}`,`Mode,${R.set.mode}`);if(R.Fk&&R.Fk.fixed)L.push(`Candidate slope source,${q(R.Fk.src)}`,`Candidate fixed slope b (K),${R.Fk.b}`);
+ if(R.rti!==undefined){
+  L.push(`Control RTI (C) [${S.ctrl.prop} ${S.ctrl.thk} mm],${R.nc?'':R.rtiC}`,`CT (h),${R.nc?'':R.CT.toFixed(0)}`,`Assignment time t (h),${R.tA.toFixed(0)}`,`Rule (UL 746B Table 19.1),${q(ruleTxt(R))}`,`Candidate ${R.set.mode==='nc20'?'TI':'RTI'} (C) [${S.cand.prop} ${S.cand.thk} mm${PTYPE(S.cand.prop)?' '+PTYPE(S.cand.prop):''}],${R.rti.toFixed(2)}`,`Assigned ${R.set.mode==='nc20'?'TI':'RTI'} (C) [UL 746B 23.1${R.set.oven?', oven<=3C':''}],${R.asg}`);
+  if(isFinite(R.ciLo))L.push(`CI low (C),${R.ciLo.toFixed(2)}`,`CI high (C),${R.ciHi.toFixed(2)}`);
+  [['Control',R.Fc],['Candidate',R.Fk]].filter(x=>x[1]).forEach(([n,F])=>{L.push(`${n} slope b,${F.b}`,`${n} intercept a,${F.a}`,`${n} R2,${F.r2}`,`${n} Ea kJ/mol,${F.Ea.toFixed(2)}`);R.set.f50.forEach(hh=>L.push(`${n} T@${hh}h (C),${F.temp(hh).toFixed(2)}`));});}
+ dl(fname('csv'),new Blob(['\ufeff'+L.join('\r\n')],{type:'text/csv'}));
+}
+function svgString(){const c=$('chart').cloneNode(true);c.setAttribute('xmlns','http://www.w3.org/2000/svg');c.setAttribute('width',760);c.setAttribute('height',470);return new XMLSerializer().serializeToString(c);}
+function downloadSVG(){dl(fname('svg'),new Blob([svgString()],{type:'image/svg+xml'}));}
+function downloadPNG(){const img=new Image();img.onload=()=>{const cv=document.createElement('canvas');cv.width=1520;cv.height=940;const x=cv.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,cv.width,cv.height);x.drawImage(img,0,0,cv.width,cv.height);cv.toBlob(b=>dl(fname('png'),b));};img.src='data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svgString());}
+function printReport(){
+ const R=LAST,d=R.set.dec,ok=R.rti!==undefined;
+ const mt=g=>`<tr><th>${t(g)}</th><td>${esc(S[g].name)}</td><td>${esc(S[g].prop)}</td><td>${esc(S[g].thk)}</td></tr>`;
+ const dt=g=>S[g].rows.filter(r=>String(r[0]??'').trim()!=='').map(r=>`<tr><td>${t(g)}</td><td>${r[0]}</td><td>${isEst(r)?`<s style="color:#888">${esc(origTxt(r))}</s> <b style="color:#d32f2f">${esc(r[1])}</b> <span style="color:#d32f2f;font-size:8pt">(${t('estTag')})</span>`:esc(r[3]||r[1])}</td><td>${r[2]?'✓':'excluded'}</td></tr>`).join('');
+ const msgs=[...R.errs,...R.warns,...R.infos];
+ $('report').innerHTML=`<h1>LTTA-RTI Report</h1><div>${new Date().toLocaleString()}</div>
+ <h3>Materials</h3><table><tr><th></th><th>${t('name')}</th><th>${t('prop')}</th><th>${t('thk')}</th></tr>${R.nc?'':mt('ctrl')}${mt('cand')}</table>
+ <h3>Result</h3><table>
+ <tr><th>${t('mode')}</th><td>${esc($('s_mode').selectedOptions[0].textContent)}</td></tr>
+ <tr><th>${t('crit')}</th><td>${esc(R.set.crit)}</td></tr>${R.Fk&&R.Fk.fixed?`<tr><th>${t('slpT')} (candidate)</th><td>${R.Fk.b.toFixed(1)} K · ${esc(R.Fk.src)}</td></tr>`:''}
+ <tr><th>${t('rtiKnown')} (control, ${esc(S.ctrl.prop)} · ${esc(S.ctrl.thk)} mm)</th><td>${R.nc?'—':esc(R.rtiC)+' °C'}</td></tr>
+ <tr><th>CT</th><td>${ok&&!R.nc?fmtH(R.CT)+' h':'—'}</td></tr>
+ <tr><th>${t('tA')}</th><td>${ok?fmtH(R.tA)+' h · '+esc(ruleTxt(R)):'—'}</td></tr>
+ <tr><th>${R.set.mode==='nc20'?t('tiCand'):t('rtiCand')} (${esc(S.cand.prop)} · ${esc(S.cand.thk)} mm${PTYPE(S.cand.prop)?' · '+PTYPE(S.cand.prop):''})</th><td><b>${ok?R.asg+' °C':'—'}</b> (UL 746B 23.1)&nbsp; · ${t('measL')} ${ok?fmt(R.rti,d)+' °C':'—'}${ok&&isFinite(R.ciLo)?` (${Math.round(R.set.conf*100)}% CI ${fmt(R.ciLo,d)} – ${fmt(R.ciHi,d)} °C)`:''}</td></tr></table>
+ <table>${$('resTable').innerHTML}</table>
+ <div class="pb">${svgString()}</div>
+ <h3>Checks</h3><ul>${msgs.length?msgs.map(x=>`<li>${esc(x)}</li>`).join(''):`<li>${t('oOk')}</li>`}</ul>
+ <h3>Data</h3><table><tr><th>Group</th><th>${t('temp')}</th><th>${t('life')}</th><th>${t('use')}</th></tr>${R.nc?'':dt('ctrl')}${dt('cand')}</table>
+ <h3>Method</h3><div class="fm">${$('formulaBox').innerHTML.replace(/<nav>.*?<\/nav>/s,'')}</div>`;
+ window.print();
+}
+function toast(m){const e=$('toast');e.textContent=m;e.classList.add('show');clearTimeout(e._t);e._t=setTimeout(()=>e.classList.remove('show'),1800);}
+function loadExample(){S=structuredClone(DEF);IMP=null;renderQbar();buildCards();refresh();toast(t('exNote'));}
+function ddT(b,e){e.stopPropagation();const d=b.parentElement,o=d.classList.contains('open');document.querySelectorAll('.dd.open').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open');}
+function applyLang(){document.documentElement.lang=LANG==='zh'?'zh-CN':'en';document.querySelectorAll('[data-i]').forEach(e=>e.textContent=t(e.dataset.i));
+ $('langBtn').textContent=LANG==='zh'?'EN':'中文';buildCards();refresh();renderQbar();if(IMP)impRender();}
+function toggleLang(){LANG=LANG==='zh'?'en':'zh';localStorage.setItem('rti_lang',LANG);applyLang();}
+(function(){
+ SET_IDS.forEach(i=>['input','change'].forEach(ev=>$(i).addEventListener(ev,()=>{refresh();if(IMP&&$('impOv').classList.contains('show'))impRender();})));
+ ['o_ctrl','o_ci','o_f50'].forEach(i=>$(i).addEventListener('change',()=>refresh()));
+ $('impRti').addEventListener('input',()=>{if(IMP)impRender();});
+ $('chart').addEventListener('click',e=>{const el=e.target.closest('[data-g]');if(!el)return;const g=el.dataset.g,i=+el.dataset.i,r=S[g].rows[i];if(!r)return;r[2]=r[2]?0:1;buildCards();refresh();});
+ document.addEventListener('click',()=>document.querySelectorAll('.dd.open').forEach(x=>x.classList.remove('open')));
+ document.addEventListener('keydown',e=>{if(e.key==='Escape')closeImp();if(!(e.ctrlKey||e.metaKey))return;const k=e.key.toLowerCase();
+  if(k==='o'){e.preventDefault();$('xlsIn').click();}else if(k==='s'){e.preventDefault();exportJSON();}else if(k==='p'){e.preventDefault();printReport();}});
+ const d=$('drop'),all=$('dropAll');let dc=0;const hasFile=e=>e.dataTransfer&&[...e.dataTransfer.types].includes('Files');
+ ['dragenter','dragover'].forEach(ev=>d.addEventListener(ev,e=>{e.preventDefault();d.classList.add('hv');}));
+ d.addEventListener('dragleave',()=>d.classList.remove('hv'));
+ window.addEventListener('dragenter',e=>{if(!hasFile(e))return;e.preventDefault();dc++;all.classList.add('show');});
+ window.addEventListener('dragleave',e=>{if(!hasFile(e))return;dc=Math.max(0,dc-1);if(!dc)all.classList.remove('show');});
+ window.addEventListener('dragover',e=>{e.preventDefault();if(e.dataTransfer)e.dataTransfer.dropEffect='copy';});
+ window.addEventListener('drop',e=>{e.preventDefault();dc=0;all.classList.remove('show');d.classList.remove('hv');const f=e.dataTransfer&&e.dataTransfer.files&&e.dataTransfer.files[0];if(f)impFile(f);});
+ applyLang();
+})();
+</script>
+</body>
+</html>
